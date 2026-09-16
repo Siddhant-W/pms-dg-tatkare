@@ -1,0 +1,36 @@
+[project]
+name = "pms-backend"
+version = "0.1.0"
+description = "Proxy Management System Backend"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy[asyncio]",
+    "asyncpg",
+    "alembic",
+    "pydantic[email]",
+    "pydantic-settings",
+    "bcrypt>=4.0",
+    "python-jose[cryptography]",
+    "slowapi",
+    "aiosqlite",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "httpx",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# alembic/ sits alongside app/ at the repo root - without this, setuptools
+# can't tell which of the two top-level directories is "the" package and
+# refuses to build (confirmed via a real `pip install .` failure).
+packages = ["app"]
