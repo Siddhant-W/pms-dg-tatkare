@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X as XIcon } from 'lucide-react';
+import { X as XIcon, RotateCcw } from 'lucide-react';
 import { SearchInput } from '../../components/ui/SearchInput';
 import { FilterChips } from '../../components/ui/FilterChips';
 import { TeacherWithAttendance, AttendanceStatus } from '../../types';
@@ -50,6 +50,17 @@ export function AttendancePage() {
     },
   });
 
+  const resetMutation = useMutation({
+    mutationFn: (teacherId: string) => attendanceService.resetAttendance(teacherId, today),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers', today] });
+      queryClient.invalidateQueries({ queryKey: ['attendance-summary', today] });
+      queryClient.invalidateQueries({ queryKey: ['proxy-requirements', today] });
+      queryClient.invalidateQueries({ queryKey: ['candidates'] });
+      setSelectedTeacher(null);
+    },
+  });
+
   const filtered = useMemo(() => {
     return teachers.filter(t => {
       const matchSearch = t.name.toLowerCase().includes(search.toLowerCase());
@@ -61,6 +72,12 @@ export function AttendancePage() {
   const handleMark = (status: AttendanceStatus) => {
     if (selectedTeacher) {
       mutation.mutate({ teacherId: selectedTeacher.id, status });
+    }
+  };
+
+  const handleReset = () => {
+    if (selectedTeacher) {
+      resetMutation.mutate(selectedTeacher.id);
     }
   };
 
@@ -146,21 +163,31 @@ export function AttendancePage() {
             variant="primary"
             className="bg-success hover:bg-success/90"
             onClick={() => handleMark('PRESENT')}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || resetMutation.isPending}
           >
             Mark Present
           </Button>
           <Button
             variant="destructive"
             onClick={() => handleMark('ABSENT')}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || resetMutation.isPending}
           >
             Mark Absent
           </Button>
-          <Button variant="ghost" onClick={() => setSelectedTeacher(null)} disabled={mutation.isPending}>
+          {selectedTeacher?.attendance_status !== 'NOT_MARKED' && (
+            <Button
+              variant="ghost"
+              className="gap-2"
+              onClick={handleReset}
+              disabled={mutation.isPending || resetMutation.isPending}
+            >
+              <RotateCcw size={16} /> Reset to Not Marked
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => setSelectedTeacher(null)} disabled={mutation.isPending || resetMutation.isPending}>
             Cancel
           </Button>
-          {mutation.isError && (
+          {(mutation.isError || resetMutation.isError) && (
             <p className="text-xs text-error text-center">Failed to update. Please try again.</p>
           )}
         </div>

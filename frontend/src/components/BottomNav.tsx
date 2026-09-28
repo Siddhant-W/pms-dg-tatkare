@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Users, CalendarDays, History, Menu } from 'lucide-react';
+import { Home, Users, CalendarDays, History, BarChart3 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function BottomNav() {
@@ -7,12 +7,12 @@ export function BottomNav() {
     { to: '/', label: 'Today', Icon: Home },
     { to: '/attendance', label: 'Attendance', Icon: Users },
     { to: '/timetable', label: 'Timetable', Icon: CalendarDays },
+    { to: '/analytics', label: 'Analytics', Icon: BarChart3 },
     { to: '/history', label: 'History', Icon: History },
-    { to: '/more', label: 'More', Icon: Menu },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-[var(--bottom-nav-height)] safe-bottom bg-surface-elevated/95 backdrop-blur-md border-t border-border flex justify-around items-center z-40">
+    <nav className="fixed bottom-0 left-0 right-0 h-[var(--bottom-nav-height)] safe-bottom bg-surface-elevated border-t border-border flex justify-around items-center z-40">
       {links.map(({ to, label, Icon }) => (
         <NavLink
           key={to}

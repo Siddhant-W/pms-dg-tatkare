@@ -49,6 +49,31 @@ async def mark_attendance(db: AsyncSession, teacher_id: UUID, d: date, status: A
     await db.refresh(attendance)
     return attendance
 
+async def reset_attendance(db: AsyncSession, teacher_id: UUID, d: date, supervisor_id: UUID):
+    stmt = select(Attendance).where(Attendance.teacher_id == teacher_id, Attendance.date == d)
+    attendance = (await db.execute(stmt)).scalar_one_or_none()
+
+    if not attendance:
+        return  # Already NOT_MARKED - nothing to do.
+
+    was_absent = attendance.status == AttendanceStatus.ABSENT
+    attendance_id = attendance.id
+    await db.delete(attendance)
+    await db.flush()
+
+    db.add(AuditEvent(
+        actor_id=supervisor_id,
+        event_type="ATTENDANCE_RESET",
+        entity_type="Attendance",
+        entity_id=attendance_id,
+        metadata_json={"teacher_id": str(teacher_id), "date": str(d)}
+    ))
+
+    if was_absent:
+        await remove_pending_requirements(db, teacher_id, d)
+
+    await db.commit()
+
 async def get_attendance_summary(db: AsyncSession, d: date):
     stmt = select(Attendance.status, func.count(Attendance.id)).where(Attendance.date == d).group_by(Attendance.status)
     result = await db.execute(stmt)
