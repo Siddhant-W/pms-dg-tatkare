@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-const STORAGE_KEY = 'pms.recentTeacherSearches';
+const STORAGE_KEY = 'presento.recentTeacherSearches';
 const MAX_ITEMS = 5;
 
 function read(): string[] {

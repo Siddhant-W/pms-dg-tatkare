@@ -1,4 +1,4 @@
-# Running the PMS (Phase 1)
+# Running Presento (Phase 1)
 
 ## Login credentials
 

@@ -10,7 +10,7 @@ from app.api.routes.proxy_assignments import router as proxy_assign_router
 from app.api.routes.analytics import router as analytics_router
 from app.api.routes.history import router as history_router
 
-app = FastAPI(title="PMS Backend")
+app = FastAPI(title="Presento Backend")
 
 # A wildcard origin is invalid together with allow_credentials=True: the browser
 # refuses to send/accept the HttpOnly refresh cookie. Origins must be explicit.

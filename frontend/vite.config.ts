@@ -9,11 +9,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Proxy Management System',
-        short_name: 'PMS',
+        name: 'Presento',
+        short_name: 'Presento',
         description: 'School teacher proxy management for Mrs. Vaishali Patil',
-        theme_color: '#2563eb',
-        background_color: '#ffffff',
+        theme_color: '#0d6e6e',
+        background_color: '#f8fafc',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',

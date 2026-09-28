@@ -45,7 +45,7 @@ export function LoginPage() {
             Supervisor Access
           </span>
           <h1 className="text-2xl font-bold text-text-primary">D.G. Tatkare School</h1>
-          <p className="text-sm text-text-secondary mt-1">Proxy Management System (PMS)</p>
+          <p className="text-sm text-text-secondary mt-1">Presento</p>
         </div>
         
         {error && (

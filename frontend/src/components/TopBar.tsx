@@ -17,7 +17,7 @@ export function TopBar() {
           <ChevronLeft size={22} />
         </button>
       )}
-      <h1 className="text-lg font-bold tracking-tight">PMS</h1>
+      <h1 className="text-lg font-bold tracking-tight">Presento</h1>
     </header>
   );
 }

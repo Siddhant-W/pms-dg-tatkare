@@ -1,8 +1,8 @@
-# PMS Design System --- `design.md`
+# Presento Design System --- `design.md`
 
 ## 1. Design Principle
 
-PMS should feel like a calm control panel rather than a school ERP. The
+Presento should feel like a calm control panel rather than a school ERP. The
 supervisor should understand what needs attention within two seconds and
 complete the common proxy workflow with minimal navigation.
 

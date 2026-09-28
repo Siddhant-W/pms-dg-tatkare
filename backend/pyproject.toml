@@ -1,7 +1,7 @@
 [project]
-name = "pms-backend"
+name = "presento-backend"
 version = "0.1.0"
-description = "Proxy Management System Backend"
+description = "Presento Backend"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

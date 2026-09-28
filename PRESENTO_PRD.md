@@ -1,4 +1,4 @@
-# Proxy Management System (PMS) --- Product Requirements Document
+# Presento --- Product Requirements Document
 
 **Version:** MVP v1.0\
 **Primary user:** Mrs. Vaishali Patil, School Supervisor\
@@ -10,7 +10,7 @@ School, Kolad
 
 ### Product overview
 
-PMS is a mobile-first supervisor tool for handling teacher absences and
+Presento is a mobile-first supervisor tool for handling teacher absences and
 assigning substitute/proxy teachers during the school day. It converts
 the school's weekly teacher timetable into a real-time availability
 engine.
@@ -28,7 +28,7 @@ record.
 
 The supervisor currently has to mentally cross-check multiple teacher
 timetables whenever a teacher is absent. This creates delay, accidental
-double-booking, and unnecessary administrative work. PMS should make a
+double-booking, and unnecessary administrative work. Presento should make a
 safe proxy decision in seconds.
 
 ### Target audience
