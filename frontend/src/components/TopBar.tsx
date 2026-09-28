@@ -17,6 +17,7 @@ export function TopBar() {
           <ChevronLeft size={22} />
         </button>
       )}
+      <img src="/assets/presento-icon.png" alt="Presento logo" className="h-9 w-9 rounded-lg mr-2" />
       <h1 className="text-lg font-bold tracking-tight">Presento</h1>
     </header>
   );

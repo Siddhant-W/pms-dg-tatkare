@@ -12,21 +12,21 @@ export default defineConfig({
         name: 'Presento',
         short_name: 'Presento',
         description: 'School teacher proxy management for Mrs. Vaishali Patil',
-        theme_color: '#0d6e6e',
-        background_color: '#f8fafc',
+        theme_color: '#13285f',
+        background_color: '#fbf8f1',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
         icons: [
           {
-            src: '/icons/icon-192.svg',
+            src: '/icons/icon-192.png',
             sizes: '192x192',
-            type: 'image/svg+xml'
+            type: 'image/png'
           },
           {
-            src: '/icons/icon-512.svg',
+            src: '/icons/icon-512.png',
             sizes: '512x512',
-            type: 'image/svg+xml'
+            type: 'image/png'
           }
         ]
       },

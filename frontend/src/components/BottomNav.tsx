@@ -22,16 +22,19 @@ export function BottomNav() {
         >
           {({ isActive }) => (
             <>
+              {/* Active tab uses the gold accent fill, per the brand spec's
+                  "highlights, active tab" - navy content on top of it, never
+                  white on gold. */}
               <span
                 className={cn(
                   'flex items-center justify-center w-11 h-7 rounded-full transition-all duration-200 ease-out',
-                  isActive ? 'bg-primary/10' : 'bg-transparent group-active:bg-surface'
+                  isActive ? 'bg-accent' : 'bg-transparent group-active:bg-surface'
                 )}
               >
                 <Icon
                   size={20}
                   strokeWidth={isActive ? 2.4 : 2}
-                  className={cn('transition-colors duration-200', isActive ? 'text-primary' : 'text-text-muted')}
+                  className={cn('transition-colors duration-200', isActive ? 'text-accent-fg' : 'text-text-muted')}
                 />
               </span>
               <span

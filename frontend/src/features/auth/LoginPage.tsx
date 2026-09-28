@@ -41,11 +41,15 @@ export function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-bg p-4">
       <div className="w-full max-w-sm bg-surface-elevated p-6 rounded-xl shadow-md border border-border">
         <div className="text-center mb-6">
-          <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-2">
+          <span className="inline-block px-3 py-1 bg-accent-bg text-accent-fg text-xs font-semibold rounded-full mb-4">
             Supervisor Access
           </span>
-          <h1 className="text-2xl font-bold text-text-primary">D.G. Tatkare School</h1>
-          <p className="text-sm text-text-secondary mt-1">Presento</p>
+          <img
+            src="/assets/presento-logo.png"
+            alt="Presento logo"
+            className="mx-auto w-full max-w-[420px] h-auto mb-2"
+          />
+          <p className="text-sm text-text-secondary mt-1">D.G. Tatkare School</p>
         </div>
         
         {error && (
@@ -62,7 +66,7 @@ export function LoginPage() {
               placeholder="Username" 
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 min-h-[44px] rounded-md border border-border bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              className="w-full px-4 py-3 min-h-[44px] rounded-md border border-border bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-accent text-sm"
               required
             />
           </div>
@@ -73,7 +77,7 @@ export function LoginPage() {
               placeholder="Password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 min-h-[44px] rounded-md border border-border bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              className="w-full px-4 py-3 min-h-[44px] rounded-md border border-border bg-bg text-text-primary focus:outline-none focus:ring-2 focus:ring-accent text-sm"
               required
             />
           </div>

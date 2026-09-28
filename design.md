@@ -12,20 +12,25 @@ utility.
 
 ## 2. Brand Direction
 
-_Updated to the "Administrative Calm" system (v2, sourced from the Stitch
-mobile redesign package). Same principles, new palette: deep teal replaces
-blue as the single accent, and the canvas is a soft slate instead of pure
-white._
+_Updated to the Presento brand (v3), sourced from the actual Presento
+logo/icon files: navy and gold on a warm cream canvas, replacing the
+earlier teal "Administrative Calm" placeholder palette._
 
--   Slate canvas, white cards --- surfaces tier clearly without needing
-    heavy shadows.
+-   Warm cream canvas, white cards --- surfaces tier clearly without
+    needing heavy shadows.
 -   Minimal borders (1px hairlines), calm and administrative rather than
     decorative.
--   Soft neutral surfaces.
--   One restrained accent color for primary actions: deep teal, denoting
-    trust and stewardship rather than a generic product blue.
--   Status colors are semantic (emerald / amber / rose) and must never be
-    the only indicator --- always pair with an icon.
+-   Navy (`#13285F`) is the primary color: navbar branding, primary
+    buttons (white text on navy), headings.
+-   Gold (`#C4A862`) is the accent: highlights, the active nav tab,
+    badges, focus rings. Gold is **always a fill with navy content on
+    top** --- gold text/icons directly on a light surface fail WCAG AA
+    (~2.3:1, checked), so gold never appears as plain foreground text.
+-   Status colors are semantic (green present / red absent / gold proxy
+    flagged) and must never be the only indicator --- always pair with an
+    icon.
+-   Headings use Cinzel (700, slight letter-spacing); body/UI uses
+    Manrope (500/700).
 -   Rounded cards (8px base), but avoid excessive "floating app" styling.
 -   No gradients in core operational screens.
 
@@ -33,17 +38,21 @@ white._
 
 ``` css
 :root {
-  --bg: #f8fafc;
-  --surface: #f1f5f9;
+  --bg: #fbf8f1;
+  --surface: #f3eee3;
   --surface-raised: #ffffff;
-  --text: #0f172a;
-  --text-muted: #475569;
-  --border: #e2e8f0;
-  --accent: #0d6e6e;
-  --accent-hover: #0b5b5b;
-  --success: #059669;
-  --warning: #d97706;
-  --danger: #e11d48;
+  --text: #13285f;
+  --text-muted: #4a5578;
+  --border: #e7e2d4;
+  --primary: #13285f;
+  --primary-hover: #0b1a42;
+  --primary-soft: #1c3775;
+  --accent: #c4a862;
+  --accent-bg: #f3eee0;
+  --accent-fg: #13285f;
+  --success: #2e7d5b;
+  --warning: #13285f;    /* navy-on-gold, see --accent-bg pairing */
+  --danger: #b3413a;
 
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -61,13 +70,22 @@ white._
 ```
 
 Dark-theme semantic tokens map the same roles to dark surfaces without
-changing component structure; the accent brightens to `#14b8a6` in dark
-mode for adequate contrast on near-black surfaces.
+changing component structure. Navy is too close to the near-black dark
+canvas to stay legible as an interactive color, so `--primary` brightens
+to a mid blue (`#4a6bc9`) in dark mode; gold brightens slightly
+(`#d8c383`) and, unlike in light mode, is legible as plain foreground
+text against the dark canvas, so dark-mode status colors that need a
+gold accent use it as text rather than requiring the navy-on-gold fill
+pairing.
 
 This is the spec of record for the app's palette --- `frontend/src/styles/tokens.css`
 implements it as CSS custom properties consumed through Tailwind's
-semantic color names (`bg-primary`, `text-success`, `bg-pending-bg`,
+semantic color names (`bg-primary`, `text-success`, `bg-accent-bg`,
 etc.), so components should never hardcode a hex value directly.
+
+Typography stack: `--font-heading: 'Cinzel', Georgia, serif` for
+h1--h3 (applied globally, see globals.css) and `--font-sans: 'Manrope', ...`
+for everything else, both loaded via Google Fonts in `index.html`.
 
 ## 4. Typography
 
@@ -161,8 +179,8 @@ primary Sign In button. Keep it intentionally sparse.
 
 ### Today
 
-_v2 layout (Administrative Calm), real data only --- no widget is shown
-unless it is backed by an actual query:_
+_v2 layout, real data only --- no widget is shown unless it is backed by
+an actual query:_
 
 1.  Greeting + date, using the signed-in supervisor's real name.
 2.  Primary "Mark Attendance" CTA --- always the strongest visual

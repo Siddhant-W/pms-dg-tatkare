@@ -102,7 +102,7 @@ export function CandidatePage() {
             key={candidate.teacher_id}
             style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
             className={`bg-surface-elevated p-4 rounded-xl shadow-sm border transition-colors animate-slide-up ${
-              candidate.is_recommended ? 'border-primary ring-1 ring-primary/15' : 'border-border'
+              candidate.is_recommended ? 'border-accent ring-1 ring-accent/30' : 'border-border'
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
@@ -115,7 +115,7 @@ export function CandidatePage() {
                 </div>
               </div>
               {candidate.is_recommended && (
-                <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium shrink-0">
+                <span className="flex items-center gap-1 text-xs bg-accent-bg text-accent-fg px-2 py-1 rounded-full font-medium shrink-0">
                   <Sparkles size={12} /> Best fit
                 </span>
               )}
