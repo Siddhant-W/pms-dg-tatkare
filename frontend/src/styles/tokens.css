@@ -1,45 +1,57 @@
 :root {
-  /* Colors - Light Mode. bg is a soft neutral canvas (not stark white) so
-     surface-elevated cards actually read as "raised" against it, per
-     design.md's "soft neutral surfaces" direction. */
-  --color-bg: #f4f5f9;
-  --color-surface: #eceef3;
+  /* Colors - Light Mode. Presento brand palette: navy + gold on a warm
+     cream canvas, matching the Presento logo/icon (design.md #2/#3). */
+  --color-bg: #fbf8f1;
+  --color-surface: #f3eee3;
   --color-surface-elevated: #ffffff;
-  --color-border: #e2e4ea;
-  --color-border-subtle: #eceef3;
-  
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
+  --color-border: #e7e2d4;
+  --color-border-subtle: #f0ece0;
+
+  --color-primary: #13285f;
+  --color-primary-hover: #0b1a42;
   --color-primary-fg: #ffffff;
-  
-  --color-success: #16a34a;
-  --color-success-bg: #f0fdf4;
-  --color-warning: #d97706;
-  --color-warning-bg: #fffbeb;
-  --color-error: #dc2626;
-  --color-error-bg: #fef2f2;
-  
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
+  /* Secondary/dark-surface tint of primary - cards or panels that sit on a
+     navy background, not used as a flat page/card fill. */
+  --color-primary-soft: #1c3775;
+
+  /* Gold accent - highlights, active tab, badges, focus rings. Gold is
+     never used as text/icon color on a light surface (fails contrast);
+     it is always a fill with navy content on top (design.md brand spec:
+     "white text on navy buttons; navy text on gold elements, never white
+     on gold"). --color-accent-fg is that navy foreground. */
+  --color-accent: #c4a862;
+  --color-accent-bg: #f3eee0;
+  --color-accent-fg: #13285f;
+
+  --color-success: #2e7d5b;
+  --color-success-bg: #e3f2ea;
+  --color-warning: #13285f;
+  --color-warning-bg: #f3eee0;
+  --color-error: #b3413a;
+  --color-error-bg: #f5e4e2;
+
+  --color-text-primary: #13285f;
+  --color-text-secondary: #4a5578;
+  --color-text-muted: #7a84a3;
   --color-text-inverse: #ffffff;
-  
+
   /* Present/Absent/Not Marked status colors */
-  --color-present: #16a34a;
-  --color-present-bg: #dcfce7;
-  --color-absent: #dc2626;
-  --color-absent-bg: #fee2e2;
-  --color-not-marked: #6b7280;
-  --color-not-marked-bg: #f3f4f6;
-  
-  /* Proxy status colors */
-  --color-pending: #d97706;
-  --color-pending-bg: #fef3c7;
-  --color-assigned: #16a34a;
-  --color-assigned-bg: #dcfce7;
-  --color-unresolved: #dc2626;
-  --color-unresolved-bg: #fee2e2;
-  
+  --color-present: #2e7d5b;
+  --color-present-bg: #e3f2ea;
+  --color-absent: #b3413a;
+  --color-absent-bg: #f5e4e2;
+  --color-not-marked: #4a5578;
+  --color-not-marked-bg: #ede9dc;
+
+  /* Proxy status colors - "proxy flagged" is the gold-branded state, so it
+     uses the accent fill with navy foreground (see --color-accent note). */
+  --color-pending: #13285f;
+  --color-pending-bg: #f3eee0;
+  --color-assigned: #2e7d5b;
+  --color-assigned-bg: #e3f2ea;
+  --color-unresolved: #b3413a;
+  --color-unresolved-bg: #f5e4e2;
+
   /* Spacing */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -49,21 +61,24 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --space-10: 2.5rem;
-  
+
   /* Border radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
   --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -4px rgba(0,0,0,0.05);
-  
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+
+  /* Shadows - layered-card / action-card / sheet elevations */
+  --shadow-sm: 0 1px 2px 0 rgba(19,40,95,0.06);
+  --shadow-md: 0 4px 6px -1px rgba(19,40,95,0.10), 0 2px 4px -2px rgba(19,40,95,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(19,40,95,0.14), 0 4px 6px -4px rgba(19,40,95,0.08);
+
+  /* Typography - Cinzel for headings/brand, Manrope for body/UI
+     (design.md brand spec). --font-sans stays the general-purpose alias
+     used by most components; headings opt in via --font-heading. */
+  --font-heading: 'Cinzel', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -71,10 +86,10 @@
   --font-size-xl: 1.25rem;
   --font-size-2xl: 1.5rem;
   --font-size-3xl: 1.875rem;
-  
+
   /* Bottom nav safe area */
   --bottom-nav-height: 64px;
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
@@ -91,31 +106,38 @@
   --color-text-secondary: #9ca3af;
   --color-text-muted: #6b7280;
 
-  /* Same semantic roles, mapped to dark surfaces: brighter foreground hues
-     for contrast on black, tinted (not pastel) backgrounds for chips/badges. */
-  --color-primary: #3b82f6;
-  --color-primary-hover: #60a5fa;
+  /* Same semantic roles, mapped to dark surfaces: primary brightens to a
+     legible mid-navy/blue since the brand navy is too close to the dark
+     canvas itself; gold brightens slightly for the same reason. Gold still
+     pairs with navy (not white) foreground text per the brand rule. */
+  --color-primary: #4a6bc9;
+  --color-primary-hover: #6684d6;
+  --color-primary-soft: #2c3f7a;
 
-  --color-success: #22c55e;
-  --color-success-bg: rgba(34, 197, 94, 0.15);
-  --color-warning: #f59e0b;
-  --color-warning-bg: rgba(245, 158, 11, 0.15);
-  --color-error: #f87171;
-  --color-error-bg: rgba(248, 113, 113, 0.15);
+  --color-accent: #d8c383;
+  --color-accent-bg: rgba(216, 195, 131, 0.15);
+  --color-accent-fg: #0b1a42;
 
-  --color-present: #22c55e;
-  --color-present-bg: rgba(34, 197, 94, 0.15);
-  --color-absent: #f87171;
-  --color-absent-bg: rgba(248, 113, 113, 0.15);
+  --color-success: #4fae86;
+  --color-success-bg: rgba(79, 174, 134, 0.15);
+  --color-warning: #d8c383;
+  --color-warning-bg: rgba(216, 195, 131, 0.15);
+  --color-error: #d97b73;
+  --color-error-bg: rgba(217, 123, 115, 0.15);
+
+  --color-present: #4fae86;
+  --color-present-bg: rgba(79, 174, 134, 0.15);
+  --color-absent: #d97b73;
+  --color-absent-bg: rgba(217, 123, 115, 0.15);
   --color-not-marked: #9ca3af;
   --color-not-marked-bg: rgba(156, 163, 175, 0.15);
 
-  --color-pending: #f59e0b;
-  --color-pending-bg: rgba(245, 158, 11, 0.15);
-  --color-assigned: #22c55e;
-  --color-assigned-bg: rgba(34, 197, 94, 0.15);
-  --color-unresolved: #f87171;
-  --color-unresolved-bg: rgba(248, 113, 113, 0.15);
+  --color-pending: #d8c383;
+  --color-pending-bg: rgba(216, 195, 131, 0.15);
+  --color-assigned: #4fae86;
+  --color-assigned-bg: rgba(79, 174, 134, 0.15);
+  --color-unresolved: #d97b73;
+  --color-unresolved-bg: rgba(217, 123, 115, 0.15);
 
   --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.3);
   --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.3);

@@ -5,7 +5,6 @@ from app.models.timetable import TimetableEntry, Weekday
 from app.models.attendance import Attendance, AttendanceStatus
 from app.models.proxy import ProxyRequirement, ProxyAssignment, RequirementStatus
 from app.models.audit import AuditEvent
-from app.models.favorites import FavoriteTeacher
 
 __all__ = [
     "Base",
@@ -19,5 +18,4 @@ __all__ = [
     "ProxyAssignment",
     "RequirementStatus",
     "AuditEvent",
-    "FavoriteTeacher",
 ]

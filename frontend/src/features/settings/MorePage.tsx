@@ -16,7 +16,7 @@ export function MorePage() {
     const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     try {
-      localStorage.setItem('pms.theme', next);
+      localStorage.setItem('presento.theme', next);
     } catch {
       // Private browsing or a full quota shouldn't block the toggle itself.
     }

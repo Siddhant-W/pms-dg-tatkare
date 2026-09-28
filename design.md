@@ -1,8 +1,8 @@
-# PMS Design System --- `design.md`
+# Presento Design System --- `design.md`
 
 ## 1. Design Principle
 
-PMS should feel like a calm control panel rather than a school ERP. The
+Presento should feel like a calm control panel rather than a school ERP. The
 supervisor should understand what needs attention within two seconds and
 complete the common proxy workflow with minimal navigation.
 
@@ -12,32 +12,51 @@ utility.
 
 ## 2. Brand Direction
 
--   White-first.
--   Minimal borders.
--   Soft neutral surfaces.
--   One restrained accent color for primary actions.
--   Status colors are semantic and must never be the only indicator.
--   Rounded cards, but avoid excessive "floating app" styling.
+_Updated to the Presento brand (v3), sourced from the actual Presento
+logo/icon files: navy and gold on a warm cream canvas, replacing the
+earlier teal "Administrative Calm" placeholder palette._
+
+-   Warm cream canvas, white cards --- surfaces tier clearly without
+    needing heavy shadows.
+-   Minimal borders (1px hairlines), calm and administrative rather than
+    decorative.
+-   Navy (`#13285F`) is the primary color: navbar branding, primary
+    buttons (white text on navy), headings.
+-   Gold (`#C4A862`) is the accent: highlights, the active nav tab,
+    badges, focus rings. Gold is **always a fill with navy content on
+    top** --- gold text/icons directly on a light surface fail WCAG AA
+    (~2.3:1, checked), so gold never appears as plain foreground text.
+-   Status colors are semantic (green present / red absent / gold proxy
+    flagged) and must never be the only indicator --- always pair with an
+    icon.
+-   Headings use Cinzel (700, slight letter-spacing); body/UI uses
+    Manrope (500/700).
+-   Rounded cards (8px base), but avoid excessive "floating app" styling.
 -   No gradients in core operational screens.
 
 ## 3. Design Tokens
 
 ``` css
 :root {
-  --bg: #ffffff;
-  --surface: #f8f9fb;
+  --bg: #fbf8f1;
+  --surface: #f3eee3;
   --surface-raised: #ffffff;
-  --text: #17181c;
-  --text-muted: #6b7280;
-  --border: #e6e8ec;
-  --accent: #2563eb;
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
+  --text: #13285f;
+  --text-muted: #4a5578;
+  --border: #e7e2d4;
+  --primary: #13285f;
+  --primary-hover: #0b1a42;
+  --primary-soft: #1c3775;
+  --accent: #c4a862;
+  --accent-bg: #f3eee0;
+  --accent-fg: #13285f;
+  --success: #2e7d5b;
+  --warning: #13285f;    /* navy-on-gold, see --accent-bg pairing */
+  --danger: #b3413a;
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -50,8 +69,23 @@ utility.
 }
 ```
 
-Dark-theme semantic tokens should map the same roles to dark surfaces
-without changing component structure.
+Dark-theme semantic tokens map the same roles to dark surfaces without
+changing component structure. Navy is too close to the near-black dark
+canvas to stay legible as an interactive color, so `--primary` brightens
+to a mid blue (`#4a6bc9`) in dark mode; gold brightens slightly
+(`#d8c383`) and, unlike in light mode, is legible as plain foreground
+text against the dark canvas, so dark-mode status colors that need a
+gold accent use it as text rather than requiring the navy-on-gold fill
+pairing.
+
+This is the spec of record for the app's palette --- `frontend/src/styles/tokens.css`
+implements it as CSS custom properties consumed through Tailwind's
+semantic color names (`bg-primary`, `text-success`, `bg-accent-bg`,
+etc.), so components should never hardcode a hex value directly.
+
+Typography stack: `--font-heading: 'Cinzel', Georgia, serif` for
+h1--h3 (applied globally, see globals.css) and `--font-sans: 'Manrope', ...`
+for everything else, both loaded via Google Fonts in `index.html`.
 
 ## 4. Typography
 
@@ -145,11 +179,29 @@ primary Sign In button. Keep it intentionally sparse.
 
 ### Today
 
-1.  Greeting/date.
-2.  Four compact metrics.
-3.  "Needs Attention" proxy queue.
-4.  Next period.
-5.  Quick attendance button.
+_v2 layout, real data only --- no widget is shown unless it is backed by
+an actual query:_
+
+1.  Greeting + date, using the signed-in supervisor's real name.
+2.  Primary "Mark Attendance" CTA --- always the strongest visual
+    element on the page, never downgraded to a ghost button once
+    attendance has started (this was a v1 bug: the CTA lost its fill
+    style after the first mark).
+3.  Compact faculty summary strip: total active faculty, absent today,
+    proxies assigned, proxies still pending. Four numbers, one row,
+    no separate cards sprawling down the page.
+4.  "Needs Attention" proxy queue, in a bounded internally-scrollable
+    panel (not an ever-growing page) --- a heavy-absence morning can
+    produce a dozen-plus pending slots, and the panel keeps the page
+    from ballooning while still surfacing every item on scroll.
+5.  "Today's Confirmed Coverage" --- a short log of proxies already
+    assigned today, so the supervisor can see progress without
+    opening History.
+
+Explicitly deferred (no backing data yet, so not built): notifications
+bell/broadcast, AI-suggested candidate match %, live staffroom camera
+feed, "free right now" faculty count. See the project backlog for
+what each would need.
 
 ### Attendance
 

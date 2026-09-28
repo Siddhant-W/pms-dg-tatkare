@@ -1,6 +1,6 @@
-# PMS Backend
+# Presento Backend
 
-Proxy Management System backend API.
+Presento backend API.
 
 ## Quick Start
 ```bash

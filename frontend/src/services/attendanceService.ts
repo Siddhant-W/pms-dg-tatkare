@@ -19,4 +19,9 @@ export const attendanceService = {
     const { data } = await api.put(`/attendance/${teacherId}`, { status }, { params: { date } });
     return data;
   },
+
+  // Clear a teacher's attendance for a specific date back to NOT_MARKED
+  resetAttendance: async (teacherId: string, date: string) => {
+    await api.delete(`/attendance/${teacherId}`, { params: { date } });
+  },
 };

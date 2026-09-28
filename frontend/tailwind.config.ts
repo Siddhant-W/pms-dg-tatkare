@@ -9,6 +9,10 @@ export default {
         border: 'var(--color-border)',
         primary: 'var(--color-primary)',
         'primary-hover': 'var(--color-primary-hover)',
+        'primary-soft': 'var(--color-primary-soft)',
+        accent: 'var(--color-accent)',
+        'accent-bg': 'var(--color-accent-bg)',
+        'accent-fg': 'var(--color-accent-fg)',
         success: 'var(--color-success)',
         'success-bg': 'var(--color-success-bg)',
         warning: 'var(--color-warning)',
@@ -44,6 +48,7 @@ export default {
       },
       fontFamily: {
         sans: ['var(--font-sans)'],
+        heading: ['var(--font-heading)'],
       },
       transitionDuration: {
         fast: '150ms',

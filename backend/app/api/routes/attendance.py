@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.models.supervisor import Supervisor
 from app.api.deps import get_current_supervisor
 from app.schemas.attendance import AttendanceUpdate, AttendanceResponse
-from app.services.attendance import mark_attendance, get_attendance_summary
+from app.services.attendance import mark_attendance, get_attendance_summary, reset_attendance
 from datetime import date
 from uuid import UUID
 
@@ -27,3 +27,12 @@ async def update_attendance(
     current_user: Supervisor = Depends(get_current_supervisor)
 ):
     return await mark_attendance(db, teacher_id, date, data.status, current_user.id)
+
+@router.delete("/{teacher_id}", status_code=204)
+async def clear_attendance(
+    teacher_id: UUID,
+    date: date = Query(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: Supervisor = Depends(get_current_supervisor)
+):
+    await reset_attendance(db, teacher_id, date, current_user.id)

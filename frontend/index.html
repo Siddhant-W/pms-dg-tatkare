@@ -2,17 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#2563eb" />
+    <meta name="theme-color" content="#13285f" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <title>Proxy Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Manrope:wght@500;700&display=swap" rel="stylesheet" />
+    <title>Presento</title>
     <script>
       // Runs before paint so a saved dark-mode preference never flashes light first.
       try {
-        var theme = localStorage.getItem('pms.theme');
+        var theme = localStorage.getItem('presento.theme');
         if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
       } catch (e) {}
     </script>

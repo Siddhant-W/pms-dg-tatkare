@@ -16,5 +16,13 @@ class TimetableEntryBase(BaseModel):
 
 class TimetableEntryResponse(TimetableEntryBase):
     id: UUID
-    
+
     model_config = ConfigDict(from_attributes=True)
+
+class TimetableEntryUpsert(BaseModel):
+    subject: str | None = None
+    class_name: str | None = None
+    is_recess: bool = False
+    is_free: bool = False
+    time_start: time | None = None
+    time_end: time | None = None

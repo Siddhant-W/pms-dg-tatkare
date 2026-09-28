@@ -1,5 +1,5 @@
 import { api } from '../lib/api';
-import { TeacherWithAttendance, TimetableEntry } from '../types';
+import { Teacher, TeacherWithAttendance, TimetableEntry } from '../types';
 
 export const teacherService = {
   getTeachers: async (date: string) => {
@@ -9,5 +9,13 @@ export const teacherService = {
   getTeacherTimetable: async (teacherId: string, day: string) => {
     const { data } = await api.get<TimetableEntry[]>(`/teachers/${teacherId}/timetable`, { params: { day } });
     return data;
-  }
+  },
+  createTeacher: async (input: { name: string; class_name?: string | null }) => {
+    const { data } = await api.post<Teacher>('/teachers', input);
+    return data;
+  },
+  updateTeacher: async (teacherId: string, input: { name?: string; class_name?: string | null; active?: boolean }) => {
+    const { data } = await api.put<Teacher>(`/teachers/${teacherId}`, input);
+    return data;
+  },
 };

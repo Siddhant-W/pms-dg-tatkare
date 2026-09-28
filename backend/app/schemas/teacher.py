@@ -11,6 +11,11 @@ class TeacherBase(BaseModel):
 class TeacherCreate(TeacherBase):
     pass
 
+class TeacherUpdate(BaseModel):
+    name: str | None = None
+    class_name: str | None = None
+    active: bool | None = None
+
 class TeacherResponse(TeacherBase):
     id: UUID
     created_at: datetime

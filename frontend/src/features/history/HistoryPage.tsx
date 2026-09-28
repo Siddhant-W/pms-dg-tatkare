@@ -57,14 +57,14 @@ export function HistoryPage() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full h-11 min-h-[44px] px-3 rounded-lg border border-border bg-surface-elevated text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+          className="w-full h-11 min-h-[44px] px-3 rounded-lg border border-border bg-surface-elevated text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent"
         />
 
         {selectedTeacher ? (
-          <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-primary/10 border border-primary/20">
-            <span className="text-sm font-medium text-primary">Filtered by: {selectedTeacher.name}</span>
+          <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-accent-bg border border-accent/30">
+            <span className="text-sm font-medium text-accent-fg">Filtered by: {selectedTeacher.name}</span>
             <button
-              className="flex items-center gap-1 text-primary text-sm font-medium min-h-[44px]"
+              className="flex items-center gap-1 text-accent-fg text-sm font-medium min-h-[44px]"
               onClick={() => {
                 setTeacherId(null);
                 setTeacherSearch('');

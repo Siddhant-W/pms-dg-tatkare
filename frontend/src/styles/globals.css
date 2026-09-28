@@ -14,6 +14,15 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Brand type system: Cinzel for headings/brand name, Manrope for body/UI
+   (see design.md brand spec). Applied globally so every screen title picks
+   it up without touching each component. */
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+
 /* Animated metrics read better with tabular figures so digits don't shift width */
 .tabular-nums { font-variant-numeric: tabular-nums; }
 
@@ -54,9 +63,10 @@ body {
   .skeleton-shimmer { animation: none; background: var(--color-border-subtle); }
 }
 
-/* Focus ring */
+/* Focus ring - gold per the brand accent spec (design.md: "focus rings"
+   is an explicit accent-color use case) */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
