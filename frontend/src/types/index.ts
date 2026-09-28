@@ -24,4 +24,3 @@ export interface DailyStats {
   proxy_load_distribution: TeacherCount[];
 }
 export interface AuditEvent { id: string; event_type: string; entity_type: string; entity_id: string; metadata: Record<string, unknown>; created_at: string; actor_name: string | null; summary: string; }
-export interface FavoriteTeacher { teacher_id: string; teacher_name: string; class_name: string | null; created_at: string; }

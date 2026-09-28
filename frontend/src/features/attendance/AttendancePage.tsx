@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Heart, X as XIcon } from 'lucide-react';
+import { X as XIcon } from 'lucide-react';
 import { SearchInput } from '../../components/ui/SearchInput';
 import { FilterChips } from '../../components/ui/FilterChips';
 import { TeacherWithAttendance, AttendanceStatus } from '../../types';
@@ -10,7 +10,6 @@ import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { attendanceService } from '../../services/attendanceService';
-import { favoritesService } from '../../services/favoritesService';
 import { useRecentSearches } from '../../hooks/useRecentSearches';
 
 function todayISO() {
@@ -37,18 +36,6 @@ export function AttendancePage() {
     queryFn: () => attendanceService.getTeachersWithAttendance(today),
   });
 
-  const { data: favorites = [] } = useQuery({
-    queryKey: ['favorites'],
-    queryFn: () => favoritesService.getFavorites(),
-  });
-  const favoriteIds = useMemo(() => new Set(favorites.map((f) => f.teacher_id)), [favorites]);
-
-  const favoriteMutation = useMutation({
-    mutationFn: ({ teacherId, isFavorite }: { teacherId: string; isFavorite: boolean }) =>
-      isFavorite ? favoritesService.removeFavorite(teacherId) : favoritesService.addFavorite(teacherId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['favorites'] }),
-  });
-
   const mutation = useMutation({
     mutationFn: ({ teacherId, status }: { teacherId: string; status: AttendanceStatus }) =>
       attendanceService.markAttendance(teacherId, today, status),
@@ -64,18 +51,12 @@ export function AttendancePage() {
   });
 
   const filtered = useMemo(() => {
-    const matches = teachers.filter(t => {
+    return teachers.filter(t => {
       const matchSearch = t.name.toLowerCase().includes(search.toLowerCase());
       const matchFilter = filter === 'ALL' || t.attendance_status === filter;
       return matchSearch && matchFilter;
     });
-    // Favorites float to the top; never affects attendance state or eligibility.
-    return [...matches].sort((a, b) => {
-      const aFav = favoriteIds.has(a.id) ? 0 : 1;
-      const bFav = favoriteIds.has(b.id) ? 0 : 1;
-      return aFav - bFav;
-    });
-  }, [teachers, search, filter, favoriteIds]);
+  }, [teachers, search, filter]);
 
   const handleMark = (status: AttendanceStatus) => {
     if (selectedTeacher) {
@@ -135,38 +116,25 @@ export function AttendancePage() {
         {!isLoading && filtered.length === 0 && (
           <div className="text-center py-8 text-text-secondary">No teachers found.</div>
         )}
-        {filtered.map((t, i) => {
-          const isFavorite = favoriteIds.has(t.id);
-          return (
-            <div
-              key={t.id}
-              onClick={() => handleSelectTeacher(t)}
-              style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
-              className="flex items-center justify-between p-3 bg-surface-elevated rounded-xl shadow-sm border border-border/80 cursor-pointer active:scale-[0.99] active:bg-surface transition-all animate-fade-in"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <Avatar name={t.name} />
-                <div className="min-w-0">
-                  <div className="font-semibold truncate">{t.name}</div>
-                  {t.class_name && <div className="text-xs text-text-secondary truncate">Class Teacher: {t.class_name}</div>}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  aria-label={isFavorite ? `Remove ${t.name} from favorites` : `Add ${t.name} to favorites`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    favoriteMutation.mutate({ teacherId: t.id, isFavorite });
-                  }}
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-90 transition-transform"
-                >
-                  <Heart size={18} className={isFavorite ? 'fill-warning text-warning' : 'text-text-muted'} />
-                </button>
-                <StatusPill status={t.attendance_status} />
+        {filtered.map((t, i) => (
+          <div
+            key={t.id}
+            onClick={() => handleSelectTeacher(t)}
+            style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
+            className="flex items-center justify-between p-3 bg-surface-elevated rounded-xl shadow-sm border border-border/80 cursor-pointer active:scale-[0.99] active:bg-surface transition-all animate-fade-in"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar name={t.name} />
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{t.name}</div>
+                {t.class_name && <div className="text-xs text-text-secondary truncate">Class Teacher: {t.class_name}</div>}
               </div>
             </div>
-          );
-        })}
+            <div className="flex items-center gap-2 shrink-0">
+              <StatusPill status={t.attendance_status} />
+            </div>
+          </div>
+        ))}
       </div>
 
       <Modal isOpen={!!selectedTeacher} onClose={() => setSelectedTeacher(null)} title={selectedTeacher?.name || ''}>

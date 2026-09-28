@@ -12,32 +12,42 @@ utility.
 
 ## 2. Brand Direction
 
--   White-first.
--   Minimal borders.
+_Updated to the "Administrative Calm" system (v2, sourced from the Stitch
+mobile redesign package). Same principles, new palette: deep teal replaces
+blue as the single accent, and the canvas is a soft slate instead of pure
+white._
+
+-   Slate canvas, white cards --- surfaces tier clearly without needing
+    heavy shadows.
+-   Minimal borders (1px hairlines), calm and administrative rather than
+    decorative.
 -   Soft neutral surfaces.
--   One restrained accent color for primary actions.
--   Status colors are semantic and must never be the only indicator.
--   Rounded cards, but avoid excessive "floating app" styling.
+-   One restrained accent color for primary actions: deep teal, denoting
+    trust and stewardship rather than a generic product blue.
+-   Status colors are semantic (emerald / amber / rose) and must never be
+    the only indicator --- always pair with an icon.
+-   Rounded cards (8px base), but avoid excessive "floating app" styling.
 -   No gradients in core operational screens.
 
 ## 3. Design Tokens
 
 ``` css
 :root {
-  --bg: #ffffff;
-  --surface: #f8f9fb;
+  --bg: #f8fafc;
+  --surface: #f1f5f9;
   --surface-raised: #ffffff;
-  --text: #17181c;
-  --text-muted: #6b7280;
-  --border: #e6e8ec;
-  --accent: #2563eb;
-  --success: #16a34a;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --border: #e2e8f0;
+  --accent: #0d6e6e;
+  --accent-hover: #0b5b5b;
+  --success: #059669;
   --warning: #d97706;
-  --danger: #dc2626;
+  --danger: #e11d48;
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -50,8 +60,14 @@ utility.
 }
 ```
 
-Dark-theme semantic tokens should map the same roles to dark surfaces
-without changing component structure.
+Dark-theme semantic tokens map the same roles to dark surfaces without
+changing component structure; the accent brightens to `#14b8a6` in dark
+mode for adequate contrast on near-black surfaces.
+
+This is the spec of record for the app's palette --- `frontend/src/styles/tokens.css`
+implements it as CSS custom properties consumed through Tailwind's
+semantic color names (`bg-primary`, `text-success`, `bg-pending-bg`,
+etc.), so components should never hardcode a hex value directly.
 
 ## 4. Typography
 
@@ -145,11 +161,29 @@ primary Sign In button. Keep it intentionally sparse.
 
 ### Today
 
-1.  Greeting/date.
-2.  Four compact metrics.
-3.  "Needs Attention" proxy queue.
-4.  Next period.
-5.  Quick attendance button.
+_v2 layout (Administrative Calm), real data only --- no widget is shown
+unless it is backed by an actual query:_
+
+1.  Greeting + date, using the signed-in supervisor's real name.
+2.  Primary "Mark Attendance" CTA --- always the strongest visual
+    element on the page, never downgraded to a ghost button once
+    attendance has started (this was a v1 bug: the CTA lost its fill
+    style after the first mark).
+3.  Compact faculty summary strip: total active faculty, absent today,
+    proxies assigned, proxies still pending. Four numbers, one row,
+    no separate cards sprawling down the page.
+4.  "Needs Attention" proxy queue, in a bounded internally-scrollable
+    panel (not an ever-growing page) --- a heavy-absence morning can
+    produce a dozen-plus pending slots, and the panel keeps the page
+    from ballooning while still surfacing every item on scroll.
+5.  "Today's Confirmed Coverage" --- a short log of proxies already
+    assigned today, so the supervisor can see progress without
+    opening History.
+
+Explicitly deferred (no backing data yet, so not built): notifications
+bell/broadcast, AI-suggested candidate match %, live staffroom camera
+feed, "free right now" faculty count. See the project backlog for
+what each would need.
 
 ### Attendance
 

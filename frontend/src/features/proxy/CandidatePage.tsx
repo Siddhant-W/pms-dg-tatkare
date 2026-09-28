@@ -2,12 +2,11 @@ import { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
-import { Heart, Sparkles, TriangleAlert } from 'lucide-react';
+import { Sparkles, TriangleAlert } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Avatar } from '../../components/ui/Avatar';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { proxyService } from '../../services/proxyService';
-import { favoritesService } from '../../services/favoritesService';
 
 export function CandidatePage() {
   const { requirementId } = useParams<{ requirementId: string }>();
@@ -20,31 +19,12 @@ export function CandidatePage() {
     enabled: !!requirementId,
   });
 
-  const { data: favorites = [] } = useQuery({
-    queryKey: ['favorites'],
-    queryFn: () => favoritesService.getFavorites(),
-  });
-  const favoriteIds = useMemo(() => new Set(favorites.map((f) => f.teacher_id)), [favorites]);
-
-  const favoriteMutation = useMutation({
-    mutationFn: ({ teacherId, isFavorite }: { teacherId: string; isFavorite: boolean }) =>
-      isFavorite ? favoritesService.removeFavorite(teacherId) : favoritesService.addFavorite(teacherId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['favorites'] }),
-  });
-
-  // The recommended candidate always leads (design.md: "Recommended candidate
-  // first") - favorites only reorder the remaining eligible candidates, and
-  // never affect which candidates are eligible in the first place.
+  // The recommended candidate always leads (design.md: "Recommended candidate first").
   const sortedCandidates = useMemo(() => {
     const recommended = candidates.filter((c: any) => c.is_recommended);
     const others = candidates.filter((c: any) => !c.is_recommended);
-    others.sort((a: any, b: any) => {
-      const aFav = favoriteIds.has(a.teacher_id) ? 0 : 1;
-      const bFav = favoriteIds.has(b.teacher_id) ? 0 : 1;
-      return aFav - bFav;
-    });
     return [...recommended, ...others];
-  }, [candidates, favoriteIds]);
+  }, [candidates]);
 
   const assignMutation = useMutation({
     mutationFn: (proxyTeacherId: string) =>
@@ -117,49 +97,39 @@ export function CandidatePage() {
       )}
 
       <div className="space-y-3">
-        {sortedCandidates.map((candidate: any, i: number) => {
-          const isFavorite = favoriteIds.has(candidate.teacher_id);
-          return (
-            <div
-              key={candidate.teacher_id}
-              style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
-              className={`bg-surface-elevated p-4 rounded-xl shadow-sm border transition-colors animate-slide-up ${
-                candidate.is_recommended ? 'border-primary ring-1 ring-primary/15' : 'border-border'
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <Avatar name={candidate.teacher_name} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold truncate">{candidate.teacher_name}</div>
-                  <div className="text-xs text-text-secondary truncate">
-                    {candidate.is_recommended ? 'Recommended' : 'Available'}
-                    {candidate.reasons?.length > 0 && ` · ${candidate.reasons.join(' · ')}`}
-                  </div>
+        {sortedCandidates.map((candidate: any, i: number) => (
+          <div
+            key={candidate.teacher_id}
+            style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
+            className={`bg-surface-elevated p-4 rounded-xl shadow-sm border transition-colors animate-slide-up ${
+              candidate.is_recommended ? 'border-primary ring-1 ring-primary/15' : 'border-border'
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar name={candidate.teacher_name} />
+              <div className="flex-1 min-w-0">
+                <div className="font-bold truncate">{candidate.teacher_name}</div>
+                <div className="text-xs text-text-secondary truncate">
+                  {candidate.is_recommended ? 'Recommended' : 'Available'}
+                  {candidate.reasons?.length > 0 && ` · ${candidate.reasons.join(' · ')}`}
                 </div>
-                <button
-                  aria-label={isFavorite ? `Remove ${candidate.teacher_name} from favorites` : `Add ${candidate.teacher_name} to favorites`}
-                  onClick={() => favoriteMutation.mutate({ teacherId: candidate.teacher_id, isFavorite })}
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0 active:scale-90 transition-transform"
-                >
-                  <Heart size={19} className={isFavorite ? 'fill-warning text-warning' : 'text-text-muted'} />
-                </button>
-                {candidate.is_recommended && (
-                  <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium shrink-0">
-                    <Sparkles size={12} /> Best fit
-                  </span>
-                )}
               </div>
-              <Button
-                className="w-full"
-                variant={candidate.is_recommended ? 'primary' : 'ghost'}
-                onClick={() => assignMutation.mutate(candidate.teacher_id)}
-                disabled={assignMutation.isPending}
-              >
-                {assignMutation.isPending ? 'Assigning...' : 'Assign Proxy'}
-              </Button>
+              {candidate.is_recommended && (
+                <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium shrink-0">
+                  <Sparkles size={12} /> Best fit
+                </span>
+              )}
             </div>
-          );
-        })}
+            <Button
+              className="w-full"
+              variant={candidate.is_recommended ? 'primary' : 'ghost'}
+              onClick={() => assignMutation.mutate(candidate.teacher_id)}
+              disabled={assignMutation.isPending}
+            >
+              {assignMutation.isPending ? 'Assigning...' : 'Assign Proxy'}
+            </Button>
+          </div>
+        ))}
       </div>
 
       {assignMutation.isError && (

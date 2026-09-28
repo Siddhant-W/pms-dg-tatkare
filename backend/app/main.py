@@ -9,7 +9,6 @@ from app.api.routes.proxy_requirements import router as proxy_req_router
 from app.api.routes.proxy_assignments import router as proxy_assign_router
 from app.api.routes.analytics import router as analytics_router
 from app.api.routes.history import router as history_router
-from app.api.routes.favorites import router as favorites_router
 
 app = FastAPI(title="PMS Backend")
 
@@ -31,7 +30,6 @@ app.include_router(proxy_req_router, prefix="/api")
 app.include_router(proxy_assign_router, prefix="/api")
 app.include_router(analytics_router, prefix="/api")
 app.include_router(history_router, prefix="/api")
-app.include_router(favorites_router, prefix="/api")
 
 @app.get("/health")
 async def health():
