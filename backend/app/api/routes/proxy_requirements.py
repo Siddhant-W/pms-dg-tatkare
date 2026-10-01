@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.database import get_db
@@ -75,3 +76,37 @@ async def requirement_candidates(
     current_user: Supervisor = Depends(get_current_supervisor)
 ):
     return await get_candidates(db, id)
+
+
+@router.get("/{id}", response_model=ProxyRequirementResponse)
+async def get_requirement(
+    id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: Supervisor = Depends(get_current_supervisor)
+):
+    """One requirement, so the candidate screen can show what is being covered."""
+    requirement = await db.get(ProxyRequirement, id)
+    if requirement is None:
+        raise HTTPException(status_code=404, detail="Proxy requirement not found")
+    absent = await db.get(Teacher, requirement.absent_teacher_id)
+    stmt = select(Teacher).join(
+        ProxyAssignment, ProxyAssignment.proxy_teacher_id == Teacher.id
+    ).where(
+        ProxyAssignment.requirement_id == requirement.id,
+        ProxyAssignment.cancelled_at.is_(None),
+    )
+    proxy = (await db.execute(stmt)).scalars().first()
+    return ProxyRequirementResponse(
+        id=requirement.id,
+        date=requirement.date,
+        weekday=requirement.weekday,
+        period_number=requirement.period_number,
+        absent_teacher_id=requirement.absent_teacher_id,
+        absent_teacher_name=absent.name if absent else None,
+        class_name=requirement.class_name,
+        subject=requirement.subject,
+        status=requirement.status,
+        created_at=requirement.created_at,
+        assigned_proxy_teacher_id=proxy.id if proxy else None,
+        assigned_proxy_teacher_name=proxy.name if proxy else None,
+    )

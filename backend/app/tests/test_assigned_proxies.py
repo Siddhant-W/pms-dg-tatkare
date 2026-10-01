@@ -92,3 +92,19 @@ async def test_requires_a_date_a_valid_status_and_authentication(client):
     assert (await client.get("/api/proxy-assignments", params={"date": MONDAY.isoformat(), "status": "BOGUS"},
                              headers=sup["headers"])).status_code == 422
     assert (await client.get("/api/proxy-assignments", params={"date": MONDAY.isoformat()})).status_code == 401
+
+
+async def test_single_requirement_lookup(client):
+    sup, ids = await scenario()
+    resp = await client.get("/api/proxy-assignments", params={"date": MONDAY.isoformat()}, headers=sup["headers"])
+    req_id = resp.json()[0]["requirement_id"]
+
+    one = await client.get(f"/api/proxy-requirements/{req_id}", headers=sup["headers"])
+    assert one.status_code == 200
+    body = one.json()
+    assert body["class_name"] == "6-I"
+    assert body["absent_teacher_name"] == "Mrs. Absent"
+    assert body["assigned_proxy_teacher_name"] == "Mr. Cover A"
+
+    missing = await client.get("/api/proxy-requirements/00000000-0000-0000-0000-000000000000", headers=sup["headers"])
+    assert missing.status_code == 404
