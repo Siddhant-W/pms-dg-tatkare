@@ -1,150 +1,156 @@
 import { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { isAxiosError } from 'axios';
-import { Sparkles, TriangleAlert } from 'lucide-react';
+import { toast } from 'sonner';
+import { BookOpen, GraduationCap, Layers, Sparkles, TriangleAlert, UserRound, UsersRound } from 'lucide-react';
+import { Page } from '../../components/Page';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
 import { Avatar } from '../../components/ui/Avatar';
-import { Skeleton } from '../../components/ui/Skeleton';
+import { Badge } from '../../components/ui/Badge';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { ListSkeleton, Skeleton } from '../../components/ui/Skeleton';
 import { proxyService } from '../../services/proxyService';
+import { parseApiError } from '../../lib/errors';
+import { formatLongDate } from '../../lib/dates';
+import { cn } from '../../lib/utils';
+import { ProxyCandidate } from '../../types';
 
 export function CandidatePage() {
   const { requirementId } = useParams<{ requirementId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: candidates = [], isLoading, error } = useQuery({
+  const requirement = useQuery({
+    queryKey: ['proxy-requirement', requirementId],
+    queryFn: () => proxyService.getRequirement(requirementId!),
+    enabled: !!requirementId,
+  });
+
+  const candidates = useQuery({
     queryKey: ['candidates', requirementId],
     queryFn: () => proxyService.getCandidates(requirementId!),
     enabled: !!requirementId,
   });
 
-  // The recommended candidate always leads (design.md: "Recommended candidate first").
-  const sortedCandidates = useMemo(() => {
-    const recommended = candidates.filter((c: any) => c.is_recommended);
-    const others = candidates.filter((c: any) => !c.is_recommended);
-    return [...recommended, ...others];
-  }, [candidates]);
+  // The server already ranks; the recommended teacher always leads.
+  const sorted = useMemo(() => {
+    const list = candidates.data ?? [];
+    return [...list].sort((a, b) => Number(b.is_recommended) - Number(a.is_recommended) || a.rank - b.rank);
+  }, [candidates.data]);
 
-  const assignMutation = useMutation({
-    mutationFn: (proxyTeacherId: string) =>
-      proxyService.assignProxy(requirementId!, proxyTeacherId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['proxy-requirements'] });
-      // The assigned teacher is now unavailable for any other pending period
-      // in this same slot - refresh other open candidate lists too.
-      queryClient.invalidateQueries({ queryKey: ['candidates'] });
+  const assign = useMutation({
+    mutationFn: (c: ProxyCandidate) => proxyService.assignProxy(requirementId!, c.teacher_id),
+    onSuccess: (_d, c) => {
+      toast.success(`${c.teacher_name} assigned`, { description: requirement.data ? `Covering period ${requirement.data.period_number} for ${requirement.data.class_name}.` : undefined });
       navigate(-1);
     },
-    onError: () => {
-      // design.md: "Never hide a collision error behind a generic toast" and
-      // "refresh the slot and explain that availability changed" - so a 409
-      // (someone else took this candidate) must re-pull the candidate list,
-      // not just show an error and leave stale entries on screen.
-      queryClient.invalidateQueries({ queryKey: ['candidates', requirementId] });
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['proxy-requirements'] });
+      queryClient.invalidateQueries({ queryKey: ['proxy-requirement', requirementId] });
+      queryClient.invalidateQueries({ queryKey: ['proxy-assignments'] });
+      // The assigned teacher is now busy for every other pending period in this slot.
+      queryClient.invalidateQueries({ queryKey: ['candidates'] });
     },
   });
 
-  const assignErrorMessage = isAxiosError(assignMutation.error)
-    ? (assignMutation.error.response?.data as { detail?: string } | undefined)?.detail
-    : undefined;
-  const isCollision = assignMutation.isError && assignMutation.error && isAxiosError(assignMutation.error) && assignMutation.error.response?.status === 409;
-
-  if (isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-7 w-48" />
-        <Skeleton className="h-4 w-64" />
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-surface-elevated p-4 rounded-xl border border-border space-y-3">
-              <div className="flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-40" />
-                </div>
-              </div>
-              <Skeleton className="h-11 w-full rounded-lg" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 text-center text-error">Failed to load candidates. Please try again.</div>
-    );
-  }
+  const assignError = assign.isError ? parseApiError(assign.error) : null;
+  const req = requirement.data;
+  const alreadyCovered = req?.status === 'ASSIGNED';
 
   return (
-    <div className="p-4 space-y-4 animate-fade-in">
-      <div>
-        <h1 className="text-xl font-bold tracking-tight">Available Teachers</h1>
-        <p className="text-sm text-text-secondary mt-0.5">
-          {candidates.length === 0
-            ? 'No available teachers found for this slot.'
-            : `${candidates.length} teacher${candidates.length !== 1 ? 's' : ''} available to cover this period`}
-        </p>
-      </div>
+    <Page>
+      <PageHeader eyebrow="Assign a proxy" title="Available teachers" description={req ? formatLongDate(req.date) : undefined} />
 
-      {candidates.length === 0 && (
-        <div className="bg-surface-elevated border border-border rounded-xl p-6 text-center text-text-secondary text-sm">
-          All teachers are either absent, busy in another class, or already assigned a proxy for this period.
-        </div>
-      )}
+      {requirement.isLoading ? (
+        <Skeleton className="h-24 w-full rounded-xl" />
+      ) : req ? (
+        <Card variant="accent" className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-7 min-w-[2rem] items-center justify-center rounded-md bg-primary px-1.5 text-xs font-bold tabular-nums text-white">P{req.period_number}</span>
+            <p className="font-bold">{req.class_name}{req.subject ? ` · ${req.subject}` : ''}</p>
+          </div>
+          <p className="flex items-center gap-1.5 text-sm text-text-secondary">
+            <UserRound size={14} aria-hidden /> {req.absent_teacher_name} is absent
+          </p>
+          {alreadyCovered && (
+            <p className="text-sm font-semibold text-success">Already covered by {req.assigned_proxy_teacher_name}.</p>
+          )}
+        </Card>
+      ) : null}
 
-      <div className="space-y-3">
-        {sortedCandidates.map((candidate: any, i: number) => (
-          <div
-            key={candidate.teacher_id}
-            style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
-            className={`bg-surface-elevated p-4 rounded-xl shadow-sm border transition-colors animate-slide-up ${
-              candidate.is_recommended ? 'border-accent ring-1 ring-accent/30' : 'border-border'
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <Avatar name={candidate.teacher_name} />
-              <div className="flex-1 min-w-0">
-                <div className="font-bold truncate">{candidate.teacher_name}</div>
-                <div className="text-xs text-text-secondary truncate">
-                  {candidate.is_recommended ? 'Recommended' : 'Available'}
-                  {candidate.reasons?.length > 0 && ` · ${candidate.reasons.join(' · ')}`}
-                </div>
-              </div>
-              {candidate.is_recommended && (
-                <span className="flex items-center gap-1 text-xs bg-accent-bg text-accent-fg px-2 py-1 rounded-full font-medium shrink-0">
-                  <Sparkles size={12} /> Best fit
-                </span>
-              )}
+      <section aria-label="Candidates" className="space-y-3">
+        {candidates.isLoading ? (
+          <ListSkeleton rows={3} />
+        ) : candidates.error ? (
+          <ErrorState title="Couldn't load candidates" onRetry={() => candidates.refetch()} />
+        ) : sorted.length === 0 ? (
+          <EmptyState
+            icon={<UsersRound size={26} />}
+            title="No one is free"
+            description="Everyone is absent, teaching another class, or already covering a proxy this period."
+            action={<Button variant="secondary" onClick={() => navigate(-1)}>Go back</Button>}
+          />
+        ) : (
+          <>
+            <p className="text-sm text-text-secondary">
+              {sorted.length} teacher{sorted.length === 1 ? '' : 's'} free. Ranked by class match first, then subject, then fewest proxies today.
+            </p>
+            <ul className="space-y-3">
+              {sorted.map((c, i) => (
+                <li key={c.teacher_id}>
+                  <CandidateCard candidate={c} position={i + 1} disabled={assign.isPending || alreadyCovered} busy={assign.isPending && assign.variables?.teacher_id === c.teacher_id} onAssign={() => assign.mutate(c)} />
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {assignError && (
+          <div role="alert" className="flex items-start gap-2 rounded-xl border border-error/30 bg-error-bg p-3">
+            <TriangleAlert size={16} className="mt-0.5 shrink-0 text-error" aria-hidden />
+            <div>
+              <p className="text-sm font-semibold text-error">{assignError.status === 409 ? 'Availability changed' : "Couldn't assign"}</p>
+              <p className="mt-0.5 text-xs text-error/90">{assignError.message}{assignError.status === 409 ? ' The list has been refreshed.' : ''}</p>
             </div>
-            <Button
-              className="w-full"
-              variant={candidate.is_recommended ? 'primary' : 'ghost'}
-              onClick={() => assignMutation.mutate(candidate.teacher_id)}
-              disabled={assignMutation.isPending}
-            >
-              {assignMutation.isPending ? 'Assigning...' : 'Assign Proxy'}
-            </Button>
           </div>
-        ))}
+        )}
+      </section>
+    </Page>
+  );
+}
+
+function CandidateCard({ candidate: c, position, disabled, busy, onAssign }: { candidate: ProxyCandidate; position: number; disabled: boolean; busy: boolean; onAssign: () => void }) {
+  return (
+    <Card variant={c.is_recommended ? 'accent' : 'raised'} className={cn('space-y-3', c.is_recommended && 'ring-1 ring-accent/40')}>
+      <div className="flex items-center gap-3">
+        <Avatar name={c.teacher_name} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-bold">{c.teacher_name}</p>
+          <p className="text-xs text-text-secondary">
+            {c.proxy_count_today === 0 ? 'No proxies yet today' : `${c.proxy_count_today} prox${c.proxy_count_today === 1 ? 'y' : 'ies'} already today`}
+          </p>
+        </div>
+        {c.is_recommended ? (
+          <Badge tone="gold"><Sparkles size={12} aria-hidden /> Best fit</Badge>
+        ) : (
+          <span className="text-xs font-bold tabular-nums text-text-muted" aria-label={`Rank ${position}`}>#{position}</span>
+        )}
       </div>
 
-      {assignMutation.isError && (
-        <div className="bg-error-bg border border-error/30 rounded-xl p-3 flex items-start gap-2 text-left animate-slide-up">
-          <TriangleAlert size={16} className="text-error shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-error">
-              {isCollision ? 'Availability changed' : "Couldn't save changes"}
-            </p>
-            <p className="text-xs text-error/80 mt-0.5">
-              {assignErrorMessage ?? 'Your last action was not confirmed by the server. Please try again.'}
-            </p>
-          </div>
+      {(c.class_match || c.subject_match) && (
+        <div className="flex flex-wrap gap-1.5">
+          {c.class_match === 'exact' && <Badge tone="navy"><GraduationCap size={12} aria-hidden /> Teaches this class</Badge>}
+          {c.class_match === 'same_standard' && <Badge tone="navy"><Layers size={12} aria-hidden /> Same standard, other division</Badge>}
+          {c.subject_match && <Badge tone="success"><BookOpen size={12} aria-hidden /> Same subject</Badge>}
         </div>
       )}
-    </div>
+
+      <Button className="w-full" variant={c.is_recommended ? 'primary' : 'secondary'} onClick={onAssign} disabled={disabled} isLoading={busy}>
+        Assign {c.teacher_name.split(' ').filter((p) => !/^(mr|mrs|ms|miss|dr)\.?$/i.test(p))[0] ?? 'proxy'}
+      </Button>
+    </Card>
   );
 }

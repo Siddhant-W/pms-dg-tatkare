@@ -11,6 +11,7 @@ export interface Supervisor {
   id: string;
   username: string;
   full_name: string | null;
+  role: 'ADMIN' | 'SUPERVISOR';
 }
 
 /**

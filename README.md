@@ -14,20 +14,40 @@
 
 A school supervisor's morning starts with the same manual work every day: mark who's absent, cross-check
 every affected period against the weekly timetable, find a free teacher for each one, and keep a record of
-who covered what. Presento turns that into a five-screen loop:
+who covered what. Presento turns that into a six-screen loop:
 
 - **Today** — a live dashboard: who's absent, how many periods still need coverage, and what's already resolved.
-- **Attendance** — mark each teacher Present or Absent for the day, with a one-tap reset back to Not Marked if
-  a status was set by mistake.
-- **Timetable** — browse any teacher's weekly schedule by day; add new teachers and edit their periods directly
-  (subject, class, free/recess, start and end time) without touching a spreadsheet.
+- **Attendance** — everyone starts the day present; switch on only the teachers who are absent. A sticky
+  "Mark all present" resets the day (after a confirmation that says what it will undo).
+- **Assigned Proxies** — who is covering which period for whom, by date, with status filters, search and a
+  cancel action.
+- **Timetable** — browse any teacher's weekly schedule by day. Administrators also get **Timetable settings**:
+  add or edit teachers, and assign subject, class, teacher and period, with conflicts caught before saving.
 - **Analytics** — attendance and proxy-load trends over time.
-- **History** — a full audit log of every attendance change and proxy assignment, filterable by date or teacher.
+- **History** — a full audit log of every attendance, proxy and timetable change, filterable by date or teacher.
 
 The core engine is proxy assignment: when a teacher is marked absent, Presento cross-references their
 timetable for that day, generates a coverage requirement for every affected period, and recommends an
-eligible substitute — someone free that period, not already teaching, and not already covering something
-else at the same time — ranked by how light their proxy load has been.
+eligible substitute. A candidate must be free that period, present, and not already covering something else.
+Among those, teachers who teach the same class (or another division of the same standard, e.g. 6-II for a 6-I
+period) rank first, then teachers of the same subject, then whoever has covered the fewest proxies that day.
+Each candidate shows why it was suggested.
+
+### Roles
+
+| Role | Can do |
+|---|---|
+| `SUPERVISOR` | Mark attendance, assign and cancel proxies, view the timetable, analytics and history |
+| `ADMIN` | Everything above, plus add/edit teachers and edit the timetable |
+
+Existing accounts become `ADMIN` when the backend first starts after this change (a one-off, idempotent
+migration), so nobody loses access they already had. New accounts are created as `SUPERVISOR`:
+
+```bash
+cd backend
+python -m app.seeds.manage_supervisor --username Meera --full-name "Mrs. Meera Rane" --password-prompt
+python -m app.seeds.manage_supervisor --username Meera --role ADMIN        # promote
+```
 
 ## Tech stack
 
@@ -82,7 +102,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` and sign in with the seeded dev account (`Vaishali` / `Vaishali`). API docs are
+Open `http://localhost:5173` and sign in with the seeded dev account (`Vaishali` / `Vaishali`, an administrator). API docs are
 served at `http://localhost:8000/docs`.
 
 Full setup details — environment variables, how the auth session actually works, and known gaps — are in

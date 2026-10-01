@@ -179,49 +179,59 @@ primary Sign In button. Keep it intentionally sparse.
 
 ### Today
 
-_v2 layout, real data only --- no widget is shown unless it is backed by
-an actual query:_
+_Real data only --- no widget is shown unless it is backed by an actual query:_
 
-1.  Greeting + date, using the signed-in supervisor's real name.
-2.  Primary "Mark Attendance" CTA --- always the strongest visual
-    element on the page, never downgraded to a ghost button once
-    attendance has started (this was a v1 bug: the CTA lost its fill
-    style after the first mark).
-3.  Compact faculty summary strip: total active faculty, absent today,
-    proxies assigned, proxies still pending. Four numbers, one row,
-    no separate cards sprawling down the page.
-4.  "Needs Attention" proxy queue, in a bounded internally-scrollable
-    panel (not an ever-growing page) --- a heavy-absence morning can
-    produce a dozen-plus pending slots, and the panel keeps the page
-    from ballooning while still surfacing every item on scroll.
-5.  "Today's Confirmed Coverage" --- a short log of proxies already
-    assigned today, so the supervisor can see progress without
-    opening History.
+1.  Eyebrow date + greeting using the signed-in supervisor's real name.
+2.  Four stat tiles (absent today, need a proxy, covered, unresolved).
+    Absent and Covered link to Attendance and Assigned Proxies.
+3.  An "Everyone is present" card when nobody is absent, so the empty
+    state explains that teachers count as present by default.
+4.  "Needs attention" proxy queue (pending requirements) as a card grid.
+5.  "Covered today" --- a short log of proxies already assigned, with a
+    link to the full Assigned Proxies page.
 
 Explicitly deferred (no backing data yet, so not built): notifications
 bell/broadcast, AI-suggested candidate match %, live staffroom camera
-feed, "free right now" faculty count. See the project backlog for
-what each would need.
+feed, "free right now" faculty count.
 
-### Attendance
+### Attendance (mark-absent model)
 
-Search at top → filters → teacher list. Status change should update
-optimistically only after the request is safely accepted; rollback on
-failure.
+Teachers are present by default. The page is a list of rows, each with a
+danger-toned switch: on means absent. Switches update optimistically and
+roll back with an error toast if the request fails. A sticky bar appears
+whenever someone is absent and offers "Mark all present", which opens a
+confirmation stating how many absences and proxy assignments it will
+undo. Search and Present/Absent chips (with counts) sit above the list.
+
+### Assigned Proxies
+
+A main-navigation page. Date navigator, status chips (Assigned,
+Cancelled, All, with counts), and search across teacher, class and
+subject. Phones get one card per assignment (period, class and subject,
+absent teacher, proxy teacher, who assigned it and when); from `md` it is
+a table. Cancelling asks for confirmation. A banner links to the queue
+when periods still need a proxy.
 
 ### Proxy assignment
 
-Use a focused full-screen/mobile sheet: - affected class and subject, -
-absent teacher, - recommended candidate, - alternative candidates, -
-confirmation.
+A page of ranked candidates under a context card (period, class, subject,
+absent teacher). Candidates are ordered by class match (teaches the class,
+then another division of the same standard), then subject match, then
+fewest proxies that day. Each card states why (badges) and the first is
+marked Best fit. A 409 re-fetches the list and explains that availability
+changed.
 
-After assignment, show a short success animation and move to the next
-pending requirement.
+### Timetable and Timetable settings
 
-### Timetable
-
-Day selector + teacher selector + period list. Recess appears as a
-dedicated separator between periods 5 and 6.
+`/timetable` is read-only for everyone: day chips, teacher picker, period
+list, recess separator between periods 5 and 6. Administrators see an
+"Edit timetable" action leading to `/timetable/settings` (admin-only, also
+enforced by the API), which has two tabs: Periods (teacher + day, tap a
+period to open an editor sheet with lesson/free/recess, subject, class,
+teacher, day, period, times) and Teachers (add, edit, deactivate,
+reactivate). Validation errors appear inline against the field; a class
+already taught by someone else in that period shows a warning with "Save
+anyway"; moving onto an occupied slot explains the conflict.
 
 ### History
 

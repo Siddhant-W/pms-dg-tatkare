@@ -1,19 +1,36 @@
 import { useState } from 'react';
-import { BarChart3, Moon, Sun, LogOut, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { BarChart3, Moon, Sun, LogOut, ChevronRight, Settings2, History } from 'lucide-react';
+import { Page } from '../../components/Page';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { Card } from '../../components/ui/Card';
+import { Avatar } from '../../components/ui/Avatar';
+import { Badge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
 import { useAuth } from '../auth/useAuth';
-import { useNavigate } from 'react-router-dom';
 
-function getInitials(name: string) {
-  return name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
+function Row({ icon, label, onClick, to }: { icon: React.ReactNode; label: string; onClick?: () => void; to?: string }) {
+  const body = (
+    <>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary" aria-hidden>{icon}</span>
+      <span className="flex-1 font-medium">{label}</span>
+      <ChevronRight size={18} className="text-text-muted" aria-hidden />
+    </>
+  );
+  const cls = 'flex min-h-[56px] w-full items-center gap-3 px-4 text-left transition-colors hover:bg-surface active:bg-surface';
+  return to ? <Link to={to} className={cls}>{body}</Link> : <button type="button" onClick={onClick} className={cls}>{body}</button>;
 }
 
 export function MorePage() {
+  const user = useAuth((s) => s.user);
   const logout = useAuth((s) => s.logout);
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark');
+  const isAdmin = user?.role === 'ADMIN';
+  const name = user?.full_name || user?.username || 'Supervisor';
 
   const toggleDarkMode = () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    const next = isDark ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     try {
       localStorage.setItem('presento.theme', next);
@@ -24,54 +41,30 @@ export function MorePage() {
   };
 
   const handleLogout = async () => {
-    // Clears the server-side refresh cookie too, not just local state.
-    await logout();
+    await logout(); // clears the server-side refresh cookie too
     navigate('/login', { replace: true });
   };
 
-  const name = 'Mrs. Vaishali Patil';
-
   return (
-    <div className="p-4 space-y-6 animate-fade-in">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-xl font-bold shadow-sm">
-          {getInitials(name)}
-        </div>
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">{name}</h2>
-          <p className="text-text-secondary text-sm">Supervisor</p>
-        </div>
-      </div>
+    <Page>
+      <PageHeader eyebrow="Account" title="Settings" />
 
-      <div className="rounded-xl border border-border/80 bg-surface-elevated shadow-sm divide-y divide-border overflow-hidden">
-        <button
-          onClick={() => navigate('/analytics')}
-          className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[44px] active:bg-surface transition-colors text-left"
-        >
-          <span className="flex items-center justify-center w-9 h-9 rounded-full bg-primary/10 text-primary shrink-0">
-            <BarChart3 size={17} />
-          </span>
-          <span className="flex-1 font-medium">Analytics</span>
-          <ChevronRight size={18} className="text-text-muted" />
-        </button>
-        <button
-          onClick={toggleDarkMode}
-          className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[44px] active:bg-surface transition-colors text-left"
-        >
-          <span className="flex items-center justify-center w-9 h-9 rounded-full bg-primary/10 text-primary shrink-0">
-            {isDark ? <Sun size={17} /> : <Moon size={17} />}
-          </span>
-          <span className="flex-1 font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-        </button>
-      </div>
+      <Card variant="accent" className="flex items-center gap-4">
+        <Avatar name={name} size="lg" />
+        <div className="min-w-0">
+          <p className="truncate text-lg font-bold">{name}</p>
+          <Badge tone={isAdmin ? 'gold' : 'navy'} className="mt-1">{isAdmin ? 'Administrator' : 'Supervisor'}</Badge>
+        </div>
+      </Card>
 
-      <button
-        onClick={handleLogout}
-        className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[44px] rounded-xl border border-error/20 bg-error-bg text-error active:bg-error/10 transition-colors font-medium"
-      >
-        <LogOut size={17} />
-        Logout
-      </button>
-    </div>
+      <Card padding="none" className="divide-y divide-border">
+        {isAdmin && <Row to="/timetable/settings" icon={<Settings2 size={17} />} label="Timetable settings" />}
+        <Row to="/analytics" icon={<BarChart3 size={17} />} label="Analytics" />
+        <Row to="/history" icon={<History size={17} />} label="History" />
+        <Row onClick={toggleDarkMode} icon={isDark ? <Sun size={17} /> : <Moon size={17} />} label={isDark ? 'Light mode' : 'Dark mode'} />
+      </Card>
+
+      <Button variant="secondary" className="w-full text-error" leftIcon={<LogOut size={17} />} onClick={handleLogout}>Log out</Button>
+    </Page>
   );
 }

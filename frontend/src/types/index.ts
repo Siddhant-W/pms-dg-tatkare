@@ -1,6 +1,7 @@
 export type Weekday = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY';
 export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'NOT_MARKED';
 export type ProxyStatus = 'PENDING' | 'ASSIGNED' | 'UNRESOLVED';
+export type Role = 'ADMIN' | 'SUPERVISOR';
 
 export interface Teacher { id: string; name: string; class_name: string | null; active: boolean; }
 export interface TeacherWithAttendance extends Teacher { attendance_status: AttendanceStatus; }
@@ -8,8 +9,35 @@ export interface TimetableEntry { id: string; teacher_id: string; weekday: Weekd
 export interface Attendance { id: string; teacher_id: string; date: string; status: AttendanceStatus; marked_at: string; }
 export interface ProxyRequirement { id: string; date: string; period_number: number; absent_teacher_id: string; absent_teacher_name: string; class_name: string; subject: string | null; status: ProxyStatus; assigned_proxy_teacher_id: string | null; assigned_proxy_teacher_name: string | null; }
 export interface ProxyAssignment { id: string; requirement_id: string; proxy_teacher_id: string; proxy_teacher_name: string; assigned_at: string; }
-export interface Candidate { teacher: Teacher; proxy_count_today: number; reasons: string[]; }
-export interface CandidateResult { recommended: Candidate | null; others: Candidate[]; }
+export interface ProxyCandidate {
+  teacher_id: string;
+  teacher_name: string;
+  is_recommended: boolean;
+  rank: number;
+  class_match: 'exact' | 'same_standard' | null;
+  subject_match: boolean;
+  proxy_count_today: number;
+  reasons: string[];
+}
+export interface ProxyAssignmentDetail {
+  id: string;
+  requirement_id: string;
+  date: string;
+  weekday: Weekday;
+  period_number: number;
+  class_name: string | null;
+  subject: string | null;
+  absent_teacher_id: string;
+  absent_teacher_name: string | null;
+  proxy_teacher_id: string;
+  proxy_teacher_name: string | null;
+  status: 'ASSIGNED' | 'CANCELLED';
+  assigned_at: string;
+  assigned_by_name: string | null;
+  cancelled_at: string | null;
+}
+export interface ResetAllResult { date: string; cleared_absences: number; removed_requirements: number; cancelled_assignments: number; }
+export interface AttendanceSummary { date: string; total: number; present: number; absent: number; not_marked: number; }
 export interface TeacherCount { teacher_id: string; teacher_name: string; count: number; }
 export interface DailyStats {
   date: string;

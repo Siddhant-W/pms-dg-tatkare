@@ -71,12 +71,45 @@ and that origin must be listed in the backend's `CORS_ORIGINS`.
 
 ```bash
 cd backend
-python -m pytest app/tests -q     # 18 tests
+python -m pytest app/tests -q
 ```
 
 `app/tests/test_auth_flow.py` covers the authentication regressions:
 password hashing, login success/failure, refresh rotation, token-type
-separation, and logout.
+separation, and logout. The rest cover roles, proxy ranking, the
+mark-absent attendance model, timetable validation and the assigned-proxies API.
+
+---
+
+## Roles and accounts
+
+Supervisors are `SUPERVISOR` or `ADMIN`. Only admins can create or edit teachers and edit the timetable
+(`/timetable/settings` in the app; `POST/PUT /api/teachers`, `PUT/DELETE /api/timetable/...` in the API).
+The role is read from the database on every request, so a promotion or demotion applies immediately.
+
+The backend adds the `supervisors.role` column itself on startup (`app/core/migrations.py`) and makes every
+account that existed before the column an `ADMIN`. It only runs when the column is missing, so it is safe on
+every boot, on SQLite and Postgres alike.
+
+```bash
+python -m app.seeds.manage_supervisor --username Meera --full-name "Mrs. Meera Rane" --password-prompt
+python -m app.seeds.manage_supervisor --username Meera --role ADMIN
+```
+
+## Attendance model
+
+Teachers are **present by default**. Only an `ABSENT` record changes anything, so there is no "not marked"
+state to resolve each morning. `DELETE /api/attendance?date=` clears every absence for a day (and the proxy
+requirements and assignments that came from them); `DELETE /api/attendance/{teacher_id}?date=` clears one.
+
+## Timetable edits
+
+Saving a lesson validates the period (1-9), the class (`6-I`, `8-II`, `Class VIII-2`, all stored as `6-I`
+style), free/recess exclusivity, and start/end times. The API answers `422` with per-field messages,
+`409 slot_occupied` when moving onto another lesson, and `409 class_overlap` when another teacher already
+teaches that class in that period (resend with `allow_class_overlap=true` for split groups or labs).
+Edits change the timetable only. Proxy requirements already generated for a day are not regenerated; clear
+and re-mark absences if a same-day timetable change should be reflected.
 
 ---
 

@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Timer, ShieldCheck } from 'lucide-react';
+import { Timer, ShieldCheck, UserX, Clock, CheckCircle2, TriangleAlert } from 'lucide-react';
+import { Page } from '../../components/Page';
+import { PageHeader, SectionHeader } from '../../components/ui/PageHeader';
+import { DateNav } from '../../components/ui/DateNav';
+import { StatTile } from '../../components/ui/StatTile';
 import { Card } from '../../components/ui/Card';
+import { ErrorState } from '../../components/ui/ErrorState';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { MetricCard } from '../dashboard/MetricCard';
 import { MiniBarChart } from './MiniBarChart';
 import { analyticsService } from '../../services/analyticsService';
+import { todayISO } from '../../lib/dates';
 import { DailyStats } from '../../types';
-
-function todayISO() {
-  return new Date().toISOString().split('T')[0];
-}
 
 function formatDuration(seconds: number | null) {
   if (seconds === null || seconds === undefined) return '—';
@@ -21,87 +22,55 @@ function formatDuration(seconds: number | null) {
 
 export function AnalyticsPage() {
   const [date, setDate] = useState(todayISO());
-
-  const { data: stats, isLoading } = useQuery<DailyStats>({
+  const { data: stats, isLoading, error, refetch } = useQuery<DailyStats>({
     queryKey: ['analytics', date],
     queryFn: () => analyticsService.getDailyStats(date),
   });
 
   return (
-    <div className="p-4 space-y-6 animate-fade-in">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="h-10 min-h-[44px] px-3 rounded-lg border border-border bg-bg text-text-primary text-sm"
-        />
-      </header>
+    <Page>
+      <PageHeader eyebrow="Insights" title="Analytics" actions={<DateNav value={date} onChange={setDate} />} />
 
-      {isLoading && (
+      {error ? (
+        <ErrorState onRetry={() => refetch()} />
+      ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} padding="md" className="flex flex-col items-center gap-2">
-                <Skeleton className="h-7 w-10" />
-                <Skeleton className="h-3 w-16" />
-              </Card>
-            ))}
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatTile label="Absent" value={stats?.absent_count ?? 0} icon={<UserX size={18} />} tone="danger" loading={isLoading} />
+            <StatTile label="Proxies needed" value={stats?.requirements_count ?? 0} icon={<Clock size={18} />} tone="gold" loading={isLoading} />
+            <StatTile label="Assigned" value={stats?.assigned_count ?? 0} icon={<CheckCircle2 size={18} />} tone="success" loading={isLoading} />
+            <StatTile label="Unresolved" value={stats?.unresolved_count ?? 0} icon={<TriangleAlert size={18} />} loading={isLoading} />
           </div>
-          <Card className="space-y-3">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-2 w-full rounded-full" />
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-2 w-full rounded-full" />
-          </Card>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="flex flex-col items-center gap-1 text-center">
+              <Timer size={18} className="text-primary" aria-hidden />
+              {isLoading ? <Skeleton className="h-8 w-16" /> : <span className="font-heading text-2xl font-bold tabular-nums">{formatDuration(stats?.avg_assignment_time_seconds ?? null)}</span>}
+              <span className="text-sm text-text-secondary">Avg. assignment time</span>
+            </Card>
+            <Card className="flex flex-col items-center gap-1 text-center">
+              <ShieldCheck size={18} className="text-accent-ink" aria-hidden />
+              {isLoading ? <Skeleton className="h-8 w-10" /> : <span className="font-heading text-2xl font-bold tabular-nums">{stats?.collision_attempts ?? 0}</span>}
+              <span className="text-sm text-text-secondary">Double-bookings prevented</span>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <section>
+              <SectionHeader title="Proxy load" />
+              <Card>{isLoading ? <Skeleton className="h-24 w-full" /> : <MiniBarChart items={stats?.proxy_load_distribution ?? []} emptyLabel="No proxies assigned on this day." />}</Card>
+            </section>
+            <section>
+              <SectionHeader title="Most often absent" />
+              <Card>{isLoading ? <Skeleton className="h-24 w-full" /> : <MiniBarChart items={stats?.most_frequently_absent_teachers ?? []} emptyLabel="No absence history yet." />}</Card>
+            </section>
+            <section className="lg:col-span-2">
+              <SectionHeader title="Most often a proxy" />
+              <Card>{isLoading ? <Skeleton className="h-24 w-full" /> : <MiniBarChart items={stats?.most_frequently_assigned_teachers ?? []} emptyLabel="No assignment history yet." />}</Card>
+            </section>
+          </div>
         </div>
       )}
-
-      {stats && (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <MetricCard type="absent" value={stats.absent_count} label="Absent" />
-            <MetricCard type="proxy" value={stats.requirements_count} label="Proxies Needed" />
-            <MetricCard type="assigned" value={stats.assigned_count} label="Assigned" />
-            <MetricCard type="unresolved" value={stats.unresolved_count} label="Unresolved" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Card padding="md" className="flex flex-col items-center gap-1">
-              <Timer size={18} className="text-primary mb-1" />
-              <span className="text-2xl font-bold tabular-nums">{formatDuration(stats.avg_assignment_time_seconds)}</span>
-              <span className="text-sm text-text-secondary text-center">Avg. Assignment Time</span>
-            </Card>
-            <Card padding="md" className="flex flex-col items-center gap-1">
-              <ShieldCheck size={18} className="text-warning mb-1" />
-              <span className="text-2xl font-bold tabular-nums text-warning">{stats.collision_attempts}</span>
-              <span className="text-sm text-text-secondary text-center">Collisions Prevented</span>
-            </Card>
-          </div>
-
-          <section>
-            <h2 className="text-lg font-bold mb-3">Today's Proxy Load</h2>
-            <Card>
-              <MiniBarChart items={stats.proxy_load_distribution} emptyLabel="No proxies assigned yet today." />
-            </Card>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold mb-3">Most Frequently Absent</h2>
-            <Card>
-              <MiniBarChart items={stats.most_frequently_absent_teachers} emptyLabel="No absence history yet." />
-            </Card>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold mb-3">Most Frequently Assigned as Proxy</h2>
-            <Card>
-              <MiniBarChart items={stats.most_frequently_assigned_teachers} emptyLabel="No assignment history yet." />
-            </Card>
-          </section>
-        </>
-      )}
-    </div>
+    </Page>
   );
 }

@@ -2,25 +2,22 @@ import { TeacherCount } from '../../types';
 
 export function MiniBarChart({ items, emptyLabel }: { items: TeacherCount[]; emptyLabel: string }) {
   if (items.length === 0) {
-    return <div className="text-sm text-text-secondary py-2">{emptyLabel}</div>;
+    return <p className="py-2 text-sm text-text-secondary">{emptyLabel}</p>;
   }
   const max = Math.max(...items.map((i) => i.count), 1);
   return (
-    <div className="space-y-2.5">
+    <ul className="space-y-3">
       {items.map((item) => (
-        <div key={item.teacher_id}>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="font-medium truncate pr-2">{item.teacher_name}</span>
-            <span className="text-text-secondary shrink-0">{item.count}</span>
+        <li key={item.teacher_id}>
+          <div className="mb-1 flex justify-between text-sm">
+            <span className="truncate pr-2 font-medium">{item.teacher_name}</span>
+            <span className="shrink-0 font-bold tabular-nums text-text-secondary">{item.count}</span>
           </div>
-          <div className="h-2 rounded-full bg-surface overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${Math.max((item.count / max) * 100, 4)}%` }}
-            />
+          <div className="h-2 overflow-hidden rounded-full bg-surface" role="presentation">
+            <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${Math.max((item.count / max) * 100, 4)}%` }} />
           </div>
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

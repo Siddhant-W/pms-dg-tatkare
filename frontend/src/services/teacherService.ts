@@ -2,8 +2,10 @@ import { api } from '../lib/api';
 import { Teacher, TeacherWithAttendance, TimetableEntry } from '../types';
 
 export const teacherService = {
-  getTeachers: async (date: string) => {
-    const { data } = await api.get<TeacherWithAttendance[]>(`/teachers`, { params: { date } });
+  getTeachers: async (date: string, includeInactive = false) => {
+    const { data } = await api.get<TeacherWithAttendance[]>(`/teachers`, {
+      params: { date, include_inactive: includeInactive || undefined },
+    });
     return data;
   },
   getTeacherTimetable: async (teacherId: string, day: string) => {

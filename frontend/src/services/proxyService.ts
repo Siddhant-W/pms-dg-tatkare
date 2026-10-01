@@ -1,15 +1,27 @@
 import { api } from '../lib/api';
+import { ProxyAssignmentDetail, ProxyCandidate, ProxyRequirement } from '../types';
 
 export const proxyService = {
   // Get all proxy requirements for a date
-  getProxyRequirements: async (date: string) => {
+  getProxyRequirements: async (date: string): Promise<ProxyRequirement[]> => {
     const { data } = await api.get('/proxy-requirements', { params: { date } });
     return data;
   },
 
-  // Get available candidates for a specific requirement
-  getCandidates: async (requirementId: string) => {
+  getRequirement: async (requirementId: string): Promise<ProxyRequirement> => {
+    const { data } = await api.get(`/proxy-requirements/${requirementId}`);
+    return data;
+  },
+
+  // Available candidates for a requirement, best first
+  getCandidates: async (requirementId: string): Promise<ProxyCandidate[]> => {
     const { data } = await api.get(`/proxy-requirements/${requirementId}/candidates`);
+    return data;
+  },
+
+  // Everything the Assigned Proxies page lists for a date
+  getAssignments: async (date: string, status: 'ASSIGNED' | 'CANCELLED' | 'ALL' = 'ALL'): Promise<ProxyAssignmentDetail[]> => {
+    const { data } = await api.get('/proxy-assignments', { params: { date, status } });
     return data;
   },
 
