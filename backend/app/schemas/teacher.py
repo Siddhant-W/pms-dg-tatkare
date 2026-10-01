@@ -27,6 +27,6 @@ class TeacherWithAttendanceResponse(BaseModel):
     name: str
     class_name: str | None = None
     active: bool
-    attendance_status: AttendanceStatus = AttendanceStatus.NOT_MARKED
+    attendance_status: AttendanceStatus = AttendanceStatus.PRESENT
 
     model_config = ConfigDict(from_attributes=True)

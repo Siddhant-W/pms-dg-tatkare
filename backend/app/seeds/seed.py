@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.database import AsyncSessionLocal, engine
 from app.models import Base
-from app.models.supervisor import Supervisor
+from app.core.migrations import ensure_schema
+from app.models.supervisor import Supervisor, Role
 from app.models.teacher import Teacher
 from app.models.timetable import TimetableEntry, Weekday
 from app.auth.security import get_password_hash
@@ -13,15 +14,20 @@ from app.seeds.timetable_data import TEACHERS_DATA, TIMETABLE_RAW, WEEKDAYS, par
 async def seed():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        
+
+    # create_all never alters existing tables, so bring an older database up to
+    # date (same upgrade the API applies on boot) before querying supervisors.
+    await ensure_schema(engine)
+
     async with AsyncSessionLocal() as session:
-        # 1. Seed Supervisor (Vaishali / Vaishali)
+        # 1. Seed Supervisor (Vaishali / Vaishali) - the head supervisor is the admin.
         existing_supe = (await session.execute(select(Supervisor).where(Supervisor.username == "Vaishali"))).scalar_one_or_none()
         if not existing_supe:
             supe = Supervisor(
                 username="Vaishali",
                 hashed_password=get_password_hash("Vaishali"),
-                full_name="Mrs. Vaishali Patil"
+                full_name="Mrs. Vaishali Patil",
+                role=Role.ADMIN.value,
             )
             session.add(supe)
             # Commit immediately: previously this relied on the teacher-seeding

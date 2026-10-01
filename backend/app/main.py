@@ -1,6 +1,10 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.core.database import engine
+from app.core.migrations import ensure_schema
 from app.auth.router import router as auth_router
 from app.api.routes.teachers import router as teachers_router
 from app.api.routes.timetable import router as timetable_router
@@ -10,7 +14,16 @@ from app.api.routes.proxy_assignments import router as proxy_assign_router
 from app.api.routes.analytics import router as analytics_router
 from app.api.routes.history import router as history_router
 
-app = FastAPI(title="Presento Backend")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Fail fast if an upgrade can't be applied: a failed boot keeps the
+    # previous deployment serving, whereas running on a half-migrated schema
+    # would break every request that touches the changed table.
+    await ensure_schema(engine)
+    yield
+
+
+app = FastAPI(title="Presento Backend", lifespan=lifespan)
 
 # A wildcard origin is invalid together with allow_credentials=True: the browser
 # refuses to send/accept the HttpOnly refresh cookie. Origins must be explicit.

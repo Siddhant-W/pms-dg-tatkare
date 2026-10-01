@@ -99,3 +99,30 @@ async def test_history_and_analytics_end_to_end():
         assert stats.collision_attempts >= 1
         proxy_names = [t.teacher_name for t in stats.proxy_load_distribution]
         assert "History Proxy Teacher" in proxy_names
+
+
+@pytest.mark.asyncio
+async def test_history_describes_the_new_attendance_and_timetable_events(client):
+    """Reset/teacher/timetable events must read as sentences, not raw event names."""
+    from app.tests.helpers import make_supervisor
+
+    admin = await make_supervisor("hist_admin", "ADMIN")
+    headers = admin["headers"]
+    day = date.today().isoformat()
+
+    created = (await client.post("/api/teachers", json={"name": "Mrs. Summary Test"}, headers=headers)).json()
+    await client.put(f"/api/timetable/{created['id']}/MONDAY/3", json={"subject": "Hindi", "class_name": "7-II"}, headers=headers)
+    await client.put(f"/api/attendance/{created['id']}", params={"date": day}, json={"status": "ABSENT"}, headers=headers)
+    await client.delete(f"/api/attendance/{created['id']}", params={"date": day}, headers=headers)
+    await client.put(f"/api/teachers/{created['id']}", json={"active": False}, headers=headers)
+    await client.delete("/api/attendance", params={"date": day}, headers=headers)
+
+    events = (await client.get("/api/history", params={"date": day}, headers=headers)).json()
+    summaries = [e["summary"] for e in events]
+
+    assert "Added teacher Mrs. Summary Test" in summaries
+    assert "Timetable: Mrs. Summary Test · Monday P3 set to Hindi 7-II" in summaries
+    assert "Mrs. Summary Test marked absent" in summaries
+    assert "Mrs. Summary Test reset to present" in summaries
+    assert "Deactivated teacher Mrs. Summary Test" in summaries
+    assert "Everyone marked present (0 absences cleared)" in summaries

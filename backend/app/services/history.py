@@ -21,7 +21,36 @@ def _build_summary(event: AuditEvent, teacher_map: dict, requirement_map: dict) 
             return "Unknown teacher"
 
     if event.event_type == "ATTENDANCE_MARKED":
-        return f"{teacher_name(meta.get('teacher_id'))} marked {meta.get('status', '')}"
+        status = str(meta.get("status", "")).replace("_", " ").lower()
+        return f"{teacher_name(meta.get('teacher_id'))} marked {status}"
+
+    if event.event_type == "ATTENDANCE_RESET":
+        return f"{teacher_name(meta.get('teacher_id'))} reset to present"
+
+    if event.event_type == "ATTENDANCE_RESET_ALL":
+        cleared = meta.get("cleared_absences", 0)
+        return f"Everyone marked present ({cleared} absence{'' if cleared == 1 else 's'} cleared)"
+
+    if event.event_type == "TEACHER_CREATED":
+        return f"Added teacher {meta.get('name', '')}".strip()
+
+    if event.event_type == "TEACHER_UPDATED":
+        changes = meta.get("changes") or {}
+        if changes.get("active") is False:
+            return f"Deactivated teacher {meta.get('name', '')}".strip()
+        if changes.get("active") is True:
+            return f"Reactivated teacher {meta.get('name', '')}".strip()
+        return f"Updated teacher {meta.get('name', '')}".strip()
+
+    if event.event_type in ("TIMETABLE_ENTRY_UPDATED", "TIMETABLE_ENTRY_MOVED", "TIMETABLE_ENTRY_CLEARED"):
+        where = f"{meta.get('teacher_name') or teacher_name(meta.get('teacher_id'))} · " \
+                f"{str(meta.get('weekday', '')).title()} P{meta.get('period_number', '?')}"
+        lesson = " ".join(p for p in (meta.get("subject"), meta.get("class_name")) if p)
+        if event.event_type == "TIMETABLE_ENTRY_CLEARED":
+            return f"Timetable: cleared {lesson or 'lesson'} ({where})"
+        if event.event_type == "TIMETABLE_ENTRY_MOVED":
+            return f"Timetable: moved {lesson or 'lesson'} to {where}"
+        return f"Timetable: {where} set to {lesson or 'free'}"
 
     if event.event_type == "REQUIREMENT_CREATED":
         return (

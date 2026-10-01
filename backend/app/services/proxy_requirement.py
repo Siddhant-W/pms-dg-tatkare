@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from app.models.timetable import TimetableEntry, Weekday
-from app.models.proxy import ProxyRequirement, RequirementStatus
+from app.models.proxy import ProxyRequirement, ProxyAssignment, RequirementStatus
 from app.models.audit import AuditEvent
 from datetime import date
 
@@ -65,10 +65,18 @@ async def generate_requirements(db: AsyncSession, teacher_id, d: date, superviso
     return requirements
 
 async def remove_pending_requirements(db: AsyncSession, teacher_id, d: date):
-    stmt = delete(ProxyRequirement).where(
+    pending = (
         ProxyRequirement.date == d,
         ProxyRequirement.absent_teacher_id == teacher_id,
-        ProxyRequirement.status == RequirementStatus.PENDING
+        ProxyRequirement.status == RequirementStatus.PENDING,
     )
-    await db.execute(stmt)
+    # A requirement whose proxy was cancelled is PENDING again, but the
+    # cancelled assignment rows still point at it. Postgres enforces that
+    # foreign key, so they must be removed first (a pending requirement can
+    # never have an active assignment, and the audit trail keeps the history).
+    await db.execute(delete(ProxyAssignment).where(
+        ProxyAssignment.requirement_id.in_(select(ProxyRequirement.id).where(*pending)),
+        ProxyAssignment.cancelled_at.is_not(None),
+    ))
+    await db.execute(delete(ProxyRequirement).where(*pending))
     await db.commit()

@@ -9,6 +9,7 @@ class SupervisorOut(BaseModel):
     id: UUID
     username: str
     full_name: str | None = None
+    role: str = "SUPERVISOR"
 
 
 class Token(BaseModel):

@@ -54,3 +54,15 @@ async def get_current_supervisor(
     if not user:
         raise credentials_exception
     return user
+
+
+async def require_admin(user: Supervisor = Depends(get_current_supervisor)) -> Supervisor:
+    """Gate for endpoints that change school-wide setup (teachers, timetable).
+
+    The role is read from the database on every request rather than baked into
+    the JWT, so demoting an account takes effect immediately instead of when
+    its access token expires.
+    """
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return user
