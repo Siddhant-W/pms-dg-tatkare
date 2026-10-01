@@ -9,13 +9,15 @@ export interface SearchInputProps extends React.InputHTMLAttributes<HTMLInputEle
 export function SearchInput({ className, value, onClear, onChange, ...props }: SearchInputProps) {
   return (
     <div className="relative flex items-center">
-      <Search size={17} className="absolute left-3.5 text-text-muted pointer-events-none" />
+      <Search size={17} className="pointer-events-none absolute left-3.5 text-text-muted" aria-hidden />
       <input
-        type="text"
+        type="search"
         value={value}
         onChange={onChange}
+        aria-label={props['aria-label'] ?? props.placeholder ?? 'Search'}
         className={cn(
-          'w-full pl-10 pr-10 py-2 h-11 min-h-[44px] rounded-lg border border-border bg-surface-elevated text-text-primary transition-shadow focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent',
+          'h-11 min-h-[44px] w-full rounded-lg border border-border bg-surface-elevated pl-10 pr-10 text-sm text-text-primary placeholder:text-text-muted',
+          'transition-shadow focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 [&::-webkit-search-cancel-button]:hidden',
           className
         )}
         {...props}
@@ -25,7 +27,7 @@ export function SearchInput({ className, value, onClear, onChange, ...props }: S
           type="button"
           onClick={onClear}
           aria-label="Clear search"
-          className="absolute right-2 p-1 text-text-muted hover:text-text-primary min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="absolute right-1 flex h-11 min-w-[44px] items-center justify-center text-text-muted hover:text-text-primary"
         >
           <X size={16} />
         </button>

@@ -1,6 +1,5 @@
-import { Check, X, Clock, Circle } from 'lucide-react';
+import { Check, X, Clock, Circle, Ban } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { AttendanceStatus, ProxyStatus } from '../../types';
 
 const LABELS: Record<string, string> = {
   PRESENT: 'Present',
@@ -9,9 +8,11 @@ const LABELS: Record<string, string> = {
   PENDING: 'Pending',
   ASSIGNED: 'Assigned',
   UNRESOLVED: 'Unresolved',
+  CANCELLED: 'Cancelled',
 };
 
-export function StatusPill({ status }: { status: AttendanceStatus | ProxyStatus | string }) {
+/** Status is always icon + label, never colour alone (design.md accessibility). */
+export function StatusPill({ status, className }: { status: string; className?: string }) {
   let colorClass = 'bg-not-marked-bg text-not-marked';
   let Icon = Circle;
 
@@ -30,11 +31,15 @@ export function StatusPill({ status }: { status: AttendanceStatus | ProxyStatus 
       colorClass = 'bg-pending-bg text-pending';
       Icon = Clock;
       break;
+    case 'CANCELLED':
+      colorClass = 'bg-not-marked-bg text-not-marked';
+      Icon = Ban;
+      break;
   }
 
   return (
-    <span className={cn('inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold', colorClass)}>
-      <Icon size={12} strokeWidth={3} />
+    <span className={cn('inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold', colorClass, className)}>
+      <Icon size={12} strokeWidth={3} aria-hidden />
       {LABELS[status] ?? status}
     </span>
   );

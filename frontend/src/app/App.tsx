@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from '../routes';
 import { QueryProvider } from './QueryProvider';
-import { ToastContainer } from '../components/ui/ToastContainer';
+import { Toaster } from '../components/ui/Toaster';
 import { useAuth } from '../features/auth/useAuth';
 
 export function App() {
@@ -17,7 +17,7 @@ export function App() {
   return (
     <QueryProvider>
       <RouterProvider router={router} />
-      <ToastContainer />
+      <Toaster />
     </QueryProvider>
   );
 }

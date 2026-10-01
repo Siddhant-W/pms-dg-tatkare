@@ -22,6 +22,15 @@
   --color-accent: #c4a862;
   --color-accent-bg: #f3eee0;
   --color-accent-fg: #13285f;
+  /* Darker gold that is legible as small text on cream (>=4.5:1), for eyebrows
+     and links. The plain accent is only ever used as a fill. */
+  --color-accent-ink: #7a6018;
+
+  /* Navigation chrome (sidebar / bottom nav). Fixed navy in both themes. */
+  --color-nav-bg: #13285f;
+  --color-nav-hover: rgba(255, 255, 255, 0.07);
+  --color-nav-fg: #eef1f9;
+  --color-nav-muted: #a3b2d6;
 
   --color-success: #2e7d5b;
   --color-success-bg: #e3f2ea;
@@ -117,6 +126,12 @@
   --color-accent: #d8c383;
   --color-accent-bg: rgba(216, 195, 131, 0.15);
   --color-accent-fg: #0b1a42;
+  --color-accent-ink: #d8c383;
+
+  --color-nav-bg: #0d1730;
+  --color-nav-hover: rgba(255, 255, 255, 0.06);
+  --color-nav-fg: #eef1f9;
+  --color-nav-muted: #8fa0c8;
 
   --color-success: #4fae86;
   --color-success-bg: rgba(79, 174, 134, 0.15);
